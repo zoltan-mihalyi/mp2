@@ -1,0 +1,19 @@
+{
+  "name": "mp",
+  "version": "1.0.0",
+  "description": "Multiplayer framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^0.7.1"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-typescript": "^0.6.1",
+    "typescript": "^1.4.1"
+  }
+}

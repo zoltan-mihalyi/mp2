@@ -1,0 +1,4 @@
+interface UserEvent{
+    action;
+    data;
+}
