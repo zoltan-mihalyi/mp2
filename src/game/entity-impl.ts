@@ -13,11 +13,11 @@ class EntityImpl implements Entity {
         //this.connections = new IdSetImpl();
     }
 
-    public set(name, value){ //TODO
+    public set(name:string, value:any):void{ //TODO
         this[name]=value;
     }
 
-    public get(name){ //TODO
+    public get(name):any{ //TODO
         return this[name];
     }
 }

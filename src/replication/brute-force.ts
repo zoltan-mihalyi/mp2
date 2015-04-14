@@ -1,22 +1,25 @@
-///<reference path="replicator-server.ts"/>
-///<reference path="replicator-client.ts"/>
-import StateContainer = require('./state-container');
+///<reference path="replicator.ts"/>
+import replicators=require('../replication/replicators');
 
 interface BruteForceMessage {
 }
 
-class BruteForceReplicatorServer extends StateContainer implements ReplicatorServer<BruteForceMessage> {
-    public update() {
+class BruteForceReplicator implements Replicator<BruteForceMessage> {
+    private state:GameState;
+
+    constructor(state:GameState) {
+        this.state = state;
+    }
+
+    public update():Message<BruteForceMessage>[] {
         return [{ //TODO use array
             reliable: false,
             keepOrder: true,
             data: this.state
         }];
     }
-}
 
-class BruteForceReplicatorClient extends StateContainer implements ReplicatorClient<BruteForceMessage> {
-    public onUpdate(newState:BruteForceMessage) {
+    public onUpdate(newState:BruteForceMessage):void {
         for (var i in newState) {
             if (newState.hasOwnProperty(i)) {
                 this.state[i] = newState[i];
@@ -25,10 +28,6 @@ class BruteForceReplicatorClient extends StateContainer implements ReplicatorCli
     }
 }
 
-
-var exp = {
-    Server: BruteForceReplicatorServer,
-    Client: BruteForceReplicatorClient
+replicators['brute-force'] = function (s:string) {
+    return new BruteForceReplicator(s);
 };
-
-export = exp;

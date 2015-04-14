@@ -1,15 +1,27 @@
 module.exports = function (grunt) {
     grunt.initConfig({
             typescript: {
-                base: {
-                    src: ['**/*.ts'],
-                    dest: '',
+                node: {
+                    src: ['src/**/*.ts','test/**/*.ts'],
+                    dest: 'target/node',
+                    options: {
+                        module: 'commonjs', //or commonjs
+                        target: 'es3', //or es3
+                        basePath: '',
+                        sourceMap: true,
+                        declaration: false,
+                        noImplicitAny: true
+                    }
+                },
+                browser: {
+                    src: ['src/**/*.ts','test/**/*.ts'],
+                    dest: 'target/browser',
                     options: {
                         module: 'amd', //or commonjs
-                        target: 'es5', //or es3
-                        basePath: 'path/to/typescript/files',
+                        target: 'es3', //or es3
+                        basePath: '',
                         sourceMap: true,
-                        declaration: true
+                        declaration: false
                     }
                 }
             }
@@ -17,4 +29,6 @@ module.exports = function (grunt) {
     );
 
     grunt.loadNpmTasks('grunt-typescript');
+
+    grunt.registerTask('default', ['typescript:node']);
 };

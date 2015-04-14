@@ -1,40 +1,42 @@
-///<reference path="replicator-server.ts"/>
-///<reference path="replicator-client.ts"/>
+///<reference path="..\messaging\message.ts"/>
 ///<reference path="..\game\game-state.ts"/>
-
-
-
-
-var drs = new ActiveDiffReplicatorServer({});
-
-var users = {}; //no relevance
-
-function upd1() {
-    var diff = drs.update();
-    for (var i in users) {
-        users[i].stream.send(diff);
-    }
+interface Replicator<T>{
+    update():Message<T>[];
+    onUpdate(message:T);
 }
-
-function upd2() {
-    for (var i in users) {
-        var diff = users[i].replicator.update();
-        users[i].stream.send(diff);
-    }
-}
-
-function superUpd() {
-    var updates = {};
-    for (var i in users) {
-        var replicator = users[i].replicator;
-        var upd = updates[replicator.id];
-        if (!upd) {
-            upd = replicator.update();
-            updates[replicator.id] = upd;
-        }
-        users[i].stream.send(upd);
-    }
-}
+//
+//
+//
+//var drs = new ActiveDiffReplicatorServer({});
+//
+//var users = {}; //no relevance
+//
+//function upd1() {
+//    var diff = drs.update();
+//    for (var i in users) {
+//        users[i].stream.send(diff);
+//    }
+//}
+//
+//function upd2() {
+//    for (var i in users) {
+//        var diff = users[i].replicator.update();
+//        users[i].stream.send(diff);
+//    }
+//}
+//
+//function superUpd() {
+//    var updates = {};
+//    for (var i in users) {
+//        var replicator = users[i].replicator;
+//        var upd = updates[replicator.id];
+//        if (!upd) {
+//            upd = replicator.update();
+//            updates[replicator.id] = upd;
+//        }
+//        users[i].stream.send(upd);
+//    }
+//}
 
 //
 //class UserGame {

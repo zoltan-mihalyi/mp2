@@ -1,4 +1,5 @@
 ///<reference path="..\src\game\client-user-game.ts"/>
+///<reference path="..\src\game\user-game.ts"/>
 import BruteForce = require('../src/replication/brute-force');
 import Diff = require('../src/replication/diff');
 
@@ -8,16 +9,14 @@ var canvas:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canva
 var ctx = canvas.getContext('2d');
 
 var clientEvents={
-    onJoin: function (userGame:ClientUserGame) {
+    onJoin: function (userGame:UserGame) {
 
         if (userGame.getInfo() === 'login') {
-            userGame.setReplicator(new BruteForce.Client(userGame.state)); //todo state átadása így?
             //todo repl. mechanizmus kikerülése?
             userGame.execute('login', 123, 123, function (message) {
                 console.log(message);
             });
         } else {
-            userGame.setReplicator(new Diff.Client(userGame.state)); //todo state átadása így?
             theGame = userGame;
             (<RealState>userGame.state).onAdd = function (entity) {
                 drawPixels(entity, true);
@@ -31,7 +30,7 @@ var clientEvents={
 
 var player;
 
-function drawPixels(entity, add) {
+function drawPixels(entity, add:boolean) {
     if (entity.get('type') === 'chunk') {
         var cx = entity.get('x');
         var cy = entity.get('y');

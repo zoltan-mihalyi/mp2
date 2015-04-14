@@ -12,7 +12,7 @@ class VisibilityGroupImpl implements VisibilityGroup{
         this.relevanceSet = relevanceSet;
     }
 
-    public add(entity) {
+    public add(entity:Entity) {
         var relevanceSet = this.relevanceSet;
         if (!relevanceSet.visible.contains(entity)) {
             relevanceSet.toHide.remove(entity);
@@ -28,18 +28,7 @@ class VisibilityGroupImpl implements VisibilityGroup{
         }
     }
 
-    public remove(entity) {
-        var filter;
-        if (typeof entity === 'function') {
-            filter = entity;
-            this.visible.forEach(function(entity){
-                if (filter.call(entity, entity)) {
-                    this.remove(entity);
-                }
-            });
-            return;
-        }
-
+    public remove(entity:Entity) {
         if(!this.visible.contains(entity)){
             return;
         }
@@ -53,7 +42,14 @@ class VisibilityGroupImpl implements VisibilityGroup{
             this.relevanceSet.visibleNum.remove(entity);
             //delete entity.visibleFor[this.relevanceSet.id];
         }
+    }
 
+    public removeEntities(filter:(e:Entity)=>boolean) {
+        this.visible.forEach(function(entity){
+            if (filter.call(entity, entity)) {
+                this.remove(entity);
+            }
+        });
     }
 }
 

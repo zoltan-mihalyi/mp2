@@ -1,14 +1,13 @@
+///<reference path="..\src\game\game-listener.ts"/>
 import Server = require('../src/server');
 
 import Game= require('../src/game/game');
 import DiffReplicator = require('../src/replication/diff');
 import BruteForceReplicator= require('../src/replication/brute-force');
 import RelevanceSetImpl= require('../src/relevance/relevance-set-impl');
+import chunkCreator=require('./chunks');
 
-declare
-var require;
-
-function createServer(gameEvents?) {
+function createServer(gameEvents?:GameListener<ServerUserGame>) {
 
     var server = new Server({
         onConnect: function (user) {
@@ -17,9 +16,9 @@ function createServer(gameEvents?) {
     }, gameEvents);
 
     var login = new Game({
-        onJoin: function (userGame) {
-            userGame.setReplicator(new BruteForceReplicator.Server(new RelevanceSetImpl(login)));
-            userGame.addCommand('login', function (name, password, callback) {
+        onJoin: function (userGame:ServerUserGame) {
+            userGame.setReplicator('brute-force',new RelevanceSetImpl(login));
+            userGame.addCommand('login', function (name:string, password:string, callback:Function) {
                 if (name === password) {
                     callback('ok');
                     userGame.leave();
@@ -35,8 +34,8 @@ function createServer(gameEvents?) {
     var game = new Game({
         onJoin: function (userGame) {
             var relevanceSet = new RelevanceSetImpl(game.state);
-            userGame.setReplicator(new DiffReplicator.PassiveServer(relevanceSet));
-            userGame.addCommand('move', function (x, y) {
+            userGame.setReplicator('passive-diff',relevanceSet);
+            userGame.addCommand('move', function (x:number, y:number) {
                 var x1 = player.get('x');
                 var y1 = player.get('y');
 
@@ -60,7 +59,7 @@ function createServer(gameEvents?) {
                 var px = player.get('x');
                 var py = player.get('y');
 
-                chunksGroup.remove(function (entity) {
+                chunksGroup.removeEntities(function (entity:Entity) {
                     return dist(entity.get('x') + 8, entity.get('y') + 8, px, py) > 60;
                 });
                 for (var i = 0; i < chunks.length; i++) {
@@ -80,11 +79,11 @@ function createServer(gameEvents?) {
 
     var world = game.state.createEntity();
 
-    var chunks = require('./chunks')(game.state);
+    var chunks = chunkCreator(game.state);
 
     world.set('time', 30);
 
-    function dist(x1, y1, x2, y2) {
+    function dist(x1:number, y1:number, x2:number, y2:number) {
         var dx = x1 - x2;
         var dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);

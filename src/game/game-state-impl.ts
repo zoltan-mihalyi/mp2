@@ -10,7 +10,7 @@ class GameStateImpl extends RealStateImpl {
         return entity; //TODO
     }
 
-    removeEntity(entity) {
+    removeEntity(entity:Entity):void {
         this.onRemove(entity);
     }
 }

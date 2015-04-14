@@ -29,7 +29,7 @@ class RelevanceSetImpl extends RealStateImpl implements RelevanceSet {
     visible:IdSet<Entity> = new IdSetImpl<Entity>();
     toHide:IdSet<Entity> = new IdSetImpl<Entity>();
     toShow:IdSet<Entity> = new IdSetImpl<Entity>();
-    visibleNum:EntityMapImpl = new EntityMapImpl();
+    visibleNum:EntityMap<number> = new EntityMapImpl();
 
 
     constructor(gameState:GameState) {

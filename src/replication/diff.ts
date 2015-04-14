@@ -1,14 +1,36 @@
-///<reference path="replicator-server.ts"/>
-///<reference path="replicator-client.ts"/>
-import StateContainer=require('./state-container');
+///<reference path="replicator.ts"/>
+///<reference path="..\game\game-state.ts"/>
+import replicators=require('../replication/replicators');
 
-interface Diff {
+interface Diff { //todo rename file
     create:Array<any>;
     modify:Array<any>;
     remove:Array<any>;
 }
 
-class ActiveDiffReplicatorServer extends StateContainer implements ReplicatorServer<Diff> {
+class DiffReplicatorReceiver {
+    protected state:GameState;
+
+    public constructor(state:GameState) {
+        this.state = state;
+    }
+
+    public onUpdate(message:Diff):void {
+        for (var i = 0; i < message.create.length; i++) {
+            var newObject = message.create[i];
+            this.state[newObject.id] = newObject;
+        }
+        for (var i = 0; i < message.remove.length; i++) {
+            delete this.state[message.remove[i]];
+        }
+        for (var i = 0; i < message.modify.length; i++) {
+            var mod = message.modify[i];
+            this.state[mod.id] = mod;
+        }
+    }
+}
+
+class ActiveDiffReplicator extends DiffReplicatorReceiver implements Replicator<Diff> {
 
     private lastState:GameState = {};
 
@@ -47,18 +69,11 @@ class ActiveDiffReplicatorServer extends StateContainer implements ReplicatorSer
 }
 
 
-class PassiveDiffReplicatorServer extends StateContainer implements ReplicatorServer<Diff> {
+class PassiveDiffReplicator extends DiffReplicatorReceiver implements Replicator<Diff> {
 
     private created;
     private modified;
     private removed;
-
-    constructor(state:RealState) {
-        super(state);
-        state.onAdd=this.onAdd;
-        state.onRemove=this.onRemove;
-        //state.onModify=this.onModify; TODO
-    }
 
     private onAdd = (obj)=> {
         this.created[obj.id] = obj;
@@ -89,26 +104,10 @@ class PassiveDiffReplicatorServer extends StateContainer implements ReplicatorSe
     }
 }
 
-class DiffReplicatorClient extends StateContainer implements ReplicatorClient<Diff> {
-    public onUpdate(message:Diff) {
-        for (var i = 0; i < message.create.length; i++) {
-            var newObject = message.create[i];
-            this.state[newObject.id] = newObject;
-        }
-        for (var i = 0; i < message.remove.length; i++) {
-            delete this.state[message.remove[i]];
-        }
-        for (var i = 0; i < message.modify.length; i++) {
-            var mod = message.modify[i];
-            this.state[mod.id] = mod;
-        }
-    }
-}
-
-var exp = {
-    ActiveServer: ActiveDiffReplicatorServer,
-    PassiveServer: PassiveDiffReplicatorServer,
-    Client: DiffReplicatorClient
+replicators['active-diff'] = function (s:GameState) {
+    return new ActiveDiffReplicator(s);
 };
 
-export = exp;
+replicators['passive-diff'] = function (s:GameState) {
+    return new PassiveDiffReplicator(s);
+};
