@@ -2,8 +2,8 @@
 import Server = require('../src/server');
 
 import Game= require('../src/game/game');
-import DiffReplicator = require('../src/replication/diff');
-import BruteForceReplicator= require('../src/replication/brute-force');
+import PassiveDiffReplicatorServer = require('../src/replication/diff/passive-diff-replicator-server');
+import BruteForceReplicatorServer= require('../src/replication/brute-force/brute-force-replicator-server');
 import RelevanceSetImpl= require('../src/relevance/relevance-set-impl');
 import chunkCreator=require('./chunks');
 
@@ -17,7 +17,7 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
 
     var login = new Game({
         onJoin: function (userGame:ServerUserGame) {
-            userGame.setReplicator('brute-force',new RelevanceSetImpl(login));
+            userGame.replicator = new BruteForceReplicatorServer(new RelevanceSetImpl(login));
             userGame.addCommand('login', function (name:string, password:string, callback:Function) {
                 if (name === password) {
                     callback('ok');
@@ -29,12 +29,12 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
             });
             //userGame.netUpdate();
         }
-    }, 'info');
+    }, 'login');
 
     var game = new Game({
         onJoin: function (userGame) {
             var relevanceSet = new RelevanceSetImpl(game.state);
-            userGame.setReplicator('passive-diff',relevanceSet);
+            userGame.replicator = new PassiveDiffReplicatorServer(relevanceSet);
             userGame.addCommand('move', function (x:number, y:number) {
                 var x1 = player.get('x');
                 var y1 = player.get('y');

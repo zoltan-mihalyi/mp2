@@ -1,8 +1,8 @@
 ///<reference path="server-user-game.ts"/>
-///<reference path="..\replication\replicator.ts"/>
+///<reference path="../replication/replicator-client.ts"/>
 ///<reference path="..\user.ts"/>
+///<reference path="..\replication\replicator-server.ts"/>
 import Game=require('./game');
-import replicators=require('../replication/replicators');
 
 class ServerUserGameImpl implements ServerUserGame {
     public game:Game;
@@ -10,8 +10,8 @@ class ServerUserGameImpl implements ServerUserGame {
     public onLeave = function () {
     };
     public id; //TODO
-    private replicator:Replicator<any>;
-    private idForUser;
+    public idForUser;
+    public replicator:ReplicatorServer<any>;
     private commands:{[index:string]:Function} = {}; //todo
     public state:GameState = {}; //todo
 
@@ -24,10 +24,6 @@ class ServerUserGameImpl implements ServerUserGame {
         this.user = user;
         this.id = this.game.nextUserGameId();
         this.idForUser = this.user.nextUserGameId();
-    }
-
-    public setReplicator(name:string, state:GameState):void {
-        this.replicator = replicators[name](state);
     }
 
     public getInfo() {

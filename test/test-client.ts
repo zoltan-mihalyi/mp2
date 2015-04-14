@@ -1,7 +1,5 @@
 ///<reference path="..\src\game\client-user-game.ts"/>
 ///<reference path="..\src\game\user-game.ts"/>
-import BruteForce = require('../src/replication/brute-force');
-import Diff = require('../src/replication/diff');
 
 var theGame;
 

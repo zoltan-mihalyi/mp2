@@ -1,5 +1,6 @@
 ///<reference path="game-listener.ts"/>
 ///<reference path="game-state.ts"/>
+///<reference path="..\messaging\join-event.ts"/>
 import IdSetImpl=require('../id-set-impl');
 import GameStateImpl=require('./game-state-impl');
 import ServerUserGameImpl=require('./server-user-game-impl');
@@ -40,7 +41,19 @@ class Game {
         var userGame = new ServerUserGameImpl(this, user);
         this.userGames.put(userGame);
         this.gameListener.onJoin(userGame);
-
+        var joinEvent:JoinEvent={
+            info:this.info,
+            id:userGame.idForUser,
+            replicator:userGame.replicator.typeId
+        };
+        user.send({
+            reliable:true,
+            keepOrder:true,
+            data: {
+                action: 'JOIN',
+                data: joinEvent
+            }
+        });
         return userGame;
     }
 

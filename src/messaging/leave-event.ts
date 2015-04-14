@@ -1,0 +1,3 @@
+interface LeaveEvent{
+    id:number
+}

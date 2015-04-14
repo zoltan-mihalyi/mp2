@@ -1,8 +1,9 @@
 ///<reference path="user-game.ts"/>
 ///<reference path="..\user.ts"/>
+///<reference path="..\replication\replicator-server.ts"/>
 
 interface ServerUserGame extends UserGame, IDProvider{
-    setReplicator(name:string, state:GameState):void;
+    replicator:ReplicatorServer<any>;
     leave();
     netUpdate();
     user:User;
