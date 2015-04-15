@@ -43,9 +43,8 @@ class Game {
         this.gameListener.onJoin(userGame);
         var joinEvent:JoinEvent = {
             eventType: 'JOIN',
-            gameId: 1,
+            gameId: userGame.idForUser,
             info: this.info,
-            id: userGame.idForUser,
             replicator: userGame.replicator.typeId
         };
         user.send({
