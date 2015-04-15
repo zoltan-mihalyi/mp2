@@ -2,7 +2,7 @@
 ///<reference path="messaging\user-event.ts"/>
 
 class WebsocketClient {
-    constructor(accepter:ConnectionAccepter<string>, url:string) {
+    constructor(accepter:ConnectionAccepter<string,string>, url:string) {
         var ws = new WebSocket(url);
         ws.onopen = function () {
             var target = accepter.accept({

@@ -2,6 +2,7 @@
 ///<reference path="../replication/replicator-client.ts"/>
 ///<reference path="..\user.ts"/>
 ///<reference path="..\replication\replicator-server.ts"/>
+///<reference path="..\messaging\replication-event.ts"/>
 import Game=require('./game');
 
 class ServerUserGameImpl implements ServerUserGame {
@@ -16,14 +17,14 @@ class ServerUserGameImpl implements ServerUserGame {
     public state:GameState = {}; //todo
 
     execute(command:string, ...params) {
-        this.commands[command].apply(params); //todo try
+        this.commands[command].apply(this, params); //todo try
     }
 
     constructor(game:Game, user:User) {
         this.game = game;
         this.user = user;
         this.id = this.game.nextUserGameId();
-        this.idForUser = this.user.nextUserGameId();
+        this.idForUser = user.addUserGame(this);
     }
 
     public getInfo() {
@@ -31,14 +32,14 @@ class ServerUserGameImpl implements ServerUserGame {
     }
 
     leave() {
-        //TODO
+        var leaveEvent:GameEvent = {
+            eventType: 'LEAVE',
+            gameId: this.id
+        };
         this.user.send({
             reliable: true,
             keepOrder: true,
-            data: {
-                action: 'LEAVE',
-                data: null
-            }
+            data: leaveEvent
         });
     }
 
@@ -46,13 +47,15 @@ class ServerUserGameImpl implements ServerUserGame {
         var messages = this.replicator.update();
         for (var i = 0; i < messages.length; i++) {
             var message = messages[i];
+            var gameEvent:ReplicationEvent = {
+                eventType: 'REPLICATION',
+                gameId: this.id,
+                replicationData: message.data
+            };
             this.user.send({
                 reliable: message.reliable,
                 keepOrder: message.keepOrder,
-                data: {
-                    action: 'GAME',
-                    data: message.data
-                }
+                data: gameEvent
             });
         }
     }

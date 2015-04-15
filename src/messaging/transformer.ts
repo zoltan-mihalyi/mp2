@@ -6,21 +6,21 @@ interface AsyncConvert<F,T> {
     (f:F, callback:(t:T)=>void):void;
 }
 
-class Transformer<F,T> implements ConnectionAccepter<T> {
-    private target:ConnectionAccepter<F>;
-    private convertF:AsyncConvert<F,T>;
-    private convertT:AsyncConvert<T,F>;
+class Transformer<InFrom,OutFrom,In,Out> implements ConnectionAccepter<In,Out> {
+    private target:ConnectionAccepter<InFrom,OutFrom>;
+    private convertIn:AsyncConvert<In,InFrom>;
+    private convertOutFrom:AsyncConvert<OutFrom,Out>;
 
-    constructor(target:ConnectionAccepter<F>, convertF:AsyncConvert<F,T>, convertT:AsyncConvert<T,F>) {
+    constructor(target:ConnectionAccepter<InFrom,OutFrom>, convertOutFrom:AsyncConvert<OutFrom,Out>, convertIn:AsyncConvert<In,InFrom>) {
         this.target = target;
-        this.convertF = convertF;
-        this.convertT = convertT;
+        this.convertIn = convertIn;
+        this.convertOutFrom = convertOutFrom;
     }
 
-    accept(out:Writeable<Message<T>>):Writeable<T> {
+    accept(out:Writeable<Message<Out>>):Writeable<In> {
         var t = this.target.accept({
-            write: (m:Message<F>) => {
-                this.convertF(m.data, function (data) {
+            write: (m:Message<OutFrom>) => {
+                this.convertOutFrom(m.data, function (data) {
                     out.write({
                         reliable: m.reliable,
                         keepOrder: m.keepOrder,
@@ -34,8 +34,8 @@ class Transformer<F,T> implements ConnectionAccepter<T> {
         });
 
         return {
-            write: (m:T)=> {
-                this.convertT(m, function (result:F) {
+            write: (m:In)=> {
+                this.convertIn(m, function (result:InFrom) {
                     t.write(result);
                 });
             },

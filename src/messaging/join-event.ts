@@ -1,5 +1,5 @@
-interface JoinEvent{
+///<reference path="game-event.ts"/>
+interface JoinEvent extends GameEvent{
     info:any;
-    id:number;
     replicator:number;
 }

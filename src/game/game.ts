@@ -41,18 +41,17 @@ class Game {
         var userGame = new ServerUserGameImpl(this, user);
         this.userGames.put(userGame);
         this.gameListener.onJoin(userGame);
-        var joinEvent:JoinEvent={
-            info:this.info,
-            id:userGame.idForUser,
-            replicator:userGame.replicator.typeId
+        var joinEvent:JoinEvent = {
+            eventType: 'JOIN',
+            gameId: 1,
+            info: this.info,
+            id: userGame.idForUser,
+            replicator: userGame.replicator.typeId
         };
         user.send({
-            reliable:true,
-            keepOrder:true,
-            data: {
-                action: 'JOIN',
-                data: joinEvent
-            }
+            reliable: true,
+            keepOrder: true,
+            data: joinEvent
         });
         return userGame;
     }

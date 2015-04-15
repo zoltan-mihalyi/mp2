@@ -1,4 +1,3 @@
 interface UserEvent{
-    action;
-    data;
+    eventType:string; //TODO enum
 }

@@ -7,10 +7,10 @@ import ServerEvents=require('./messaging/server-events');
 var WSServer = ws.Server;
 
 class WebsocketServer {
-    private server:ConnectionAccepter<string>;
+    private server:ConnectionAccepter<string,string>;
     private wss;
 
-    constructor(server:ConnectionAccepter<string>, port:number) {
+    constructor(server:ConnectionAccepter<string,string>, port:number) {
         this.server = server;
         this.wss = new WSServer({port: port});
 
@@ -18,7 +18,7 @@ class WebsocketServer {
             var target=server.accept({
                 write: function (m:Message<string>) {
                     //TODO reliable? keepOrder?
-                    ws.write(m.data);
+                    ws.send(m.data);
                 },
                 close: function () {
                     ws.close();

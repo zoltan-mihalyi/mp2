@@ -4,6 +4,7 @@
 
 interface ServerUserGame extends UserGame, IDProvider{
     replicator:ReplicatorServer<any>;
+    idForUser:number;
     leave();
     netUpdate();
     user:User;

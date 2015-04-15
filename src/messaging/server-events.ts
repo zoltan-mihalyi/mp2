@@ -1,4 +1,4 @@
-enum ServerEvents{
+enum ServerEvents{ //TODO use/remove
     JOIN,LEAVE,GAME
 }
 
