@@ -1,4 +1,5 @@
-function createChunks(state) {
+///<reference path="..\src\game\game-state.ts"/>
+function createChunks(state:GameState) {
     var chunks = [];
 
     for (var i = 0; i < 10; i++) {

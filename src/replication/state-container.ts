@@ -2,7 +2,7 @@
 class StateContainer {
     protected state:GameState;
 
-    constructor(state:GameState) {
+    setState(state:GameState):void {
         this.state = state;
     }
 }

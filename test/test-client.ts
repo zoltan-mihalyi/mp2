@@ -16,10 +16,10 @@ var clientEvents={
             });
         } else {
             theGame = userGame;
-            (<RealState>userGame.state).onAdd = function (entity) {
+            userGame.getState().onAdd = function (entity) {
                 drawPixels(entity, true);
             };
-            (<RealState>userGame.state).onRemove = function (entity) {
+            userGame.getState().onRemove = function (entity) {
                 drawPixels(entity, false);
             };
         }

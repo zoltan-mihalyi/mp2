@@ -12,19 +12,23 @@ class ServerUserGameImpl implements ServerUserGame {
     };
     public id; //TODO
     public idForUser;
-    public replicator:ReplicatorServer<any>;
+    private state:GameState;
     private commands:{[index:string]:Function} = {}; //todo
-    public state:GameState = {}; //todo
-
-    execute(command:string, ...params) {
-        this.commands[command].apply(this, params); //todo try
-    }
 
     constructor(game:Game, user:User) {
         this.game = game;
         this.user = user;
         this.id = this.game.nextUserGameId();
         this.idForUser = user.addUserGame(this);
+        this.state = game.getState();
+    }
+
+    execute(command:string, ...params) {
+        this.commands[command].apply(this, params); //todo try
+    }
+
+    getState():GameState {
+        return this.state;
     }
 
     public getInfo() {
@@ -43,25 +47,13 @@ class ServerUserGameImpl implements ServerUserGame {
         });
     }
 
-    public netUpdate() {
-        var messages = this.replicator.update();
-        for (var i = 0; i < messages.length; i++) {
-            var message = messages[i];
-            var gameEvent:ReplicationEvent = {
-                eventType: 'REPLICATION',
-                gameId: this.id,
-                replicationData: message.data
-            };
-            this.user.send({
-                reliable: message.reliable,
-                keepOrder: message.keepOrder,
-                data: gameEvent
-            });
-        }
-    }
-
     public addCommand(name:string, callback:Function) {
         this.commands[name] = callback;
+    }
+
+    public setRelevanceSet(relevanceSet:RelevanceSet):void{
+        this.state=relevanceSet;
+        relevanceSet.setState(this.game.getState());
     }
 }
 

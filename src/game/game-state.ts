@@ -1,8 +1,13 @@
 ///<reference path="entity.ts"/>
-interface GameState{
-}
+///<reference path="..\replication\replicator-server.ts"/>
+///<reference path="..\id-provider.ts"/>
+interface GameState extends IDProvider {
+    createEntity():Entity;
+    removeEntity(e:Entity):void;
+    forEach(callback:(e:Entity)=>void):void;
+    setReplicator(replicator:ReplicatorServer<any>); //todo kellenek metódusok?
+    getReplicator():ReplicatorServer<any>;
 
-interface RealState extends GameState{
     onAdd:(e:Entity)=>void;
     onRemove:(e:Entity)=>void;
     //onChange:(Entity)=>void;

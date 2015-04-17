@@ -9,10 +9,11 @@ interface EntityMap<T>{
     decrement(e:Entity):T;
 }
 
-interface RelevanceSet extends RealState{
+interface RelevanceSet extends GameState{
     createVisibilityGroup(name:string):VisibilityGroup;
     visible:IdSet<Entity>;
     toHide:IdSet<Entity>;
     toShow:IdSet<Entity>;
     visibleNum:EntityMap<number>;
+    setState(state:GameState):void;
 }

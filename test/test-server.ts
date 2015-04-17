@@ -17,7 +17,7 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
 
     var login = new Game({
         onJoin: function (userGame:ServerUserGame) {
-            userGame.replicator = new BruteForceReplicatorServer(new RelevanceSetImpl(login));
+            userGame.setRelevanceSet(new RelevanceSetImpl());
             userGame.addCommand('login', function (name:string, password:string, callback:Function) {
                 if (name === password) {
                     callback('ok');
@@ -32,9 +32,9 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
     }, 'login');
 
     var game = new Game({
-        onJoin: function (userGame) {
-            var relevanceSet = new RelevanceSetImpl(game.state);
-            userGame.replicator = new PassiveDiffReplicatorServer(relevanceSet);
+        onJoin: function (userGame:ServerUserGame) {
+            var relevanceSet = new RelevanceSetImpl();
+            userGame.setRelevanceSet(relevanceSet);
             userGame.addCommand('move', function (x:number, y:number) {
                 var x1 = player.get('x');
                 var y1 = player.get('y');
@@ -47,7 +47,7 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
             var chunksGroup = relevanceSet.createVisibilityGroup();
             var staticGroup = relevanceSet.createVisibilityGroup();
 
-            var player = game.state.createEntity();
+            var player = game.getState().createEntity();
             player.set('type', 'player');
             player.set('x', 24);
             player.set('y', 24);
@@ -72,14 +72,14 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
 
             userGame.onLeave = function () {
                 clearInterval(intervalId);
-                game.state.removeEntity(player);
+                game.getState().removeEntity(player);
             }
         }
     }, 'game');
 
-    var world = game.state.createEntity();
+    var world = game.getState().createEntity();
 
-    var chunks = chunkCreator(game.state);
+    var chunks = chunkCreator(game.getState());
 
     world.set('time', 30);
 
@@ -89,7 +89,10 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    game.start();
+    setInterval(function () {
+        game.netUpdate();
+    }, 45);
+
     return server;
 }
 

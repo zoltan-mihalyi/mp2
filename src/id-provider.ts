@@ -1,3 +1,3 @@
 interface IDProvider {
-    id:string
+    id:number
 }

@@ -4,5 +4,5 @@
 interface UserGame {
     getInfo():any;
     execute(command:string, ...params:any[]);
-    state:GameState;
+    getState():GameState;
 }

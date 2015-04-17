@@ -1,7 +1,14 @@
 import Transformer = require('./transformer');
 
 function convert<T>(data:T, callback:(result:string)=>void):void {
-    callback(JSON.stringify(data));
+    var str;
+    try {
+        str = JSON.stringify(data);
+    }catch(e){
+        console.log('Stringify error:' ,data);
+        return;
+    }
+    callback(str);
 }
 
 function convertBack<T>(data:string, callback:(result:T)=>void):void {

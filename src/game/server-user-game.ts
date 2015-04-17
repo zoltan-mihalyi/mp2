@@ -1,13 +1,13 @@
 ///<reference path="user-game.ts"/>
 ///<reference path="..\user.ts"/>
 ///<reference path="..\replication\replicator-server.ts"/>
+///<reference path="..\relevance\relevance-set.ts"/>
 
-interface ServerUserGame extends UserGame, IDProvider{
-    replicator:ReplicatorServer<any>;
+interface ServerUserGame extends UserGame, IDProvider {
     idForUser:number;
     leave();
-    netUpdate();
     user:User;
     onLeave:Function;
-    addCommand(name:string,callback:Function);
+    addCommand(name:string, callback:Function);
+    setRelevanceSet(relevanceSet:RelevanceSet):void
 }

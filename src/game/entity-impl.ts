@@ -4,9 +4,9 @@
 //import Set=require('../id-set-impl');
 
 class EntityImpl implements Entity {
-    public id:string;
+    public id:number;
 
-    constructor(id:string) {
+    constructor(id:number) {
         this.id = id;
         //this.visibleFor = new IdSetImpl();
         //this.values = {};

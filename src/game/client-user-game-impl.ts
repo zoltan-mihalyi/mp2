@@ -2,6 +2,7 @@
 ///<reference path="client-user-game.ts"/>
 ///<reference path="..\messaging\writeable.ts"/>
 ///<reference path="..\messaging\command-event.ts"/>
+import GameStateImpl=require('./game-state-impl');
 
 class ClientUserGameImpl implements ClientUserGame {
     private info:any;
@@ -10,14 +11,18 @@ class ClientUserGameImpl implements ClientUserGame {
     private id:number;
     private callbacks:{[index:number]:Function} = {};
     private nextCallbackId = 0;
-    public state:GameState;
+    private state:GameState;
 
     constructor(id:number, info:any, Replicator:(new (s:GameState)=>ReplicatorClient<any>), out:Writeable<Message<CommandEvent>>) {
         this.id = id;
-        this.state = {}; //TODO
+        this.state = new GameStateImpl(); //TODO
         this.info = info;
         this.replicator = new Replicator(this.state);
         this.out = out;
+    }
+
+    public getState():GameState{
+        return this.state;
     }
 
     public getInfo() {
