@@ -6,9 +6,10 @@ import IdSetImpl=require('../id-set-impl');
 import BruteForceReplicatorServer= require('../replication/brute-force/brute-force-replicator-server');
 
 class GameStateImpl implements GameState {
-    public id:number = 0;
+    public id:number = Math.random(); //TODO
+    private nextId:number = 0;
     private replicator:ReplicatorServer<any>;
-    private _entities:IdSetImpl<Entity> = new IdSetImpl<Entity>();
+    protected _entities:IdSetImpl<Entity> = new IdSetImpl<Entity>();
 
     public onAdd:(e:Entity)=>void = function () {
     };
@@ -20,13 +21,18 @@ class GameStateImpl implements GameState {
     }
 
     createEntity():Entity {
-        var entity = new EntityImpl(1);
-        this._entities.put(entity);
-        this.onAdd(entity);
+        var entity = new EntityImpl(++this.nextId);
+        this.addEntity(entity);
         return entity; //TODO
     }
 
+    addEntity(entity:Entity):void {
+        this._entities.put(entity);
+        this.onAdd(entity);
+    }
+
     removeEntity(entity:Entity):void {
+        this._entities.remove(entity);
         this.onRemove(entity);
     }
 

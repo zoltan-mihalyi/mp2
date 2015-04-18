@@ -5,20 +5,21 @@
 import EntityImpl=require('../game/entity-impl');
 import IdSetImpl=require('../id-set-impl');
 
-class VisibilityGroupImpl implements VisibilityGroup{
+class VisibilityGroupImpl implements VisibilityGroup {
     private relevanceSet:RelevanceSet;
     private visible:IdSet<Entity> = new IdSetImpl<Entity>();
+
     constructor(relevanceSet) {
         this.relevanceSet = relevanceSet;
     }
 
-    public add(entity:Entity) {
+    public add(entity:Entity):void {
         var relevanceSet = this.relevanceSet;
-        if (!relevanceSet.visible.contains(entity)) {
+        if (!relevanceSet.containsEntity(entity)) {
             relevanceSet.toHide.remove(entity);
             relevanceSet.toShow.put(entity);
-            relevanceSet.visible.put(entity);
-            relevanceSet.visibleNum.set(entity,0);
+            relevanceSet.addEntity(entity);
+            relevanceSet.visibleNum.set(entity, 0);
             //entity.visibleFor[relevanceSet.id] = relevanceSet;
         }
 
@@ -29,23 +30,22 @@ class VisibilityGroupImpl implements VisibilityGroup{
     }
 
     public remove(entity:Entity) {
-        if(!this.visible.contains(entity)){
+        if (!this.visible.contains(entity)) {
             return;
         }
         this.visible.remove(entity);
 
-        var num=this.relevanceSet.visibleNum.decrement(entity);
+        var num = this.relevanceSet.visibleNum.decrement(entity);
         if (num === 0) {
             this.relevanceSet.toHide.put(entity);
             this.relevanceSet.toShow.remove(entity);
-            this.relevanceSet.visible.remove(entity);
+            this.relevanceSet.removeEntity(entity);
             this.relevanceSet.visibleNum.remove(entity);
-            //delete entity.visibleFor[this.relevanceSet.id];
         }
     }
 
-    public removeEntities(filter:(e:Entity)=>boolean) {
-        this.visible.forEach(function(entity){
+    public removeEntities(filter:(e:Entity)=>boolean):void {
+        this.visible.forEach((entity)=> {
             if (filter.call(entity, entity)) {
                 this.remove(entity);
             }

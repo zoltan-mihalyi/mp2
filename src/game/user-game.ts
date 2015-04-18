@@ -5,4 +5,5 @@ interface UserGame {
     getInfo():any;
     execute(command:string, ...params:any[]);
     getState():GameState;
+    setPredicted(command:string, callback:Function):void;
 }

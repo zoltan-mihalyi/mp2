@@ -13,12 +13,20 @@ class EntityImpl implements Entity {
         //this.connections = new IdSetImpl();
     }
 
-    public set(name:string, value:any):void{ //TODO
-        this[name]=value;
+    public set(name:string, value:any):void { //TODO
+        this[name] = value;
     }
 
-    public get(name):any{ //TODO
+    public get(name):any { //TODO
         return this[name];
+    }
+
+    public forEach(callback:(key:string, value:any)=>void):void {
+        for (var i in this) {
+            if (this.hasOwnProperty(i) && i !== 'id') {
+                callback(i, this[i]);
+            }
+        }
     }
 }
 

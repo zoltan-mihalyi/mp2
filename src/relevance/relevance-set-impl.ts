@@ -26,22 +26,22 @@ class EntityMapImpl implements EntityMap<number> {
 }
 
 class RelevanceSetImpl extends GameStateImpl implements RelevanceSet {
-    visible:IdSet<Entity> = new IdSetImpl<Entity>();
+    //visible:IdSet<Entity> = new IdSetImpl<Entity>();
     toHide:IdSet<Entity> = new IdSetImpl<Entity>();
     toShow:IdSet<Entity> = new IdSetImpl<Entity>();
     visibleNum:EntityMap<number> = new EntityMapImpl();
     private gameState:GameState;
 
-    setState(gameState:GameState) {
+    public setState(gameState:GameState):void {
         this.gameState = gameState;
     }
 
-    createVisibilityGroup() {
+    public createVisibilityGroup():VisibilityGroup {
         return new VisibilityGroupImpl(this); //TODO
     }
 
-    on(ev, callback) {
-        //TODO
+    public containsEntity(entity:Entity):boolean {
+        return this._entities.contains(entity);
     }
 }
 export = RelevanceSetImpl;

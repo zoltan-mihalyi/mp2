@@ -87,7 +87,7 @@ class Game {
                 var message = messages[i];
                 var replicationEvent:ReplicationEvent = {
                     eventType: 'REPLICATION',
-                    gameId: userGame.id,
+                    gameId: userGame.idForUser,
                     replicationData: message.data
                 };
                 userGame.user.send({

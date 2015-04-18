@@ -12,16 +12,16 @@ class ClientUserGameImpl implements ClientUserGame {
     private callbacks:{[index:number]:Function} = {};
     private nextCallbackId = 0;
     private state:GameState;
+    private predictedCommands:{[index:string]:Function} = {};
 
-    constructor(id:number, info:any, Replicator:(new (s:GameState)=>ReplicatorClient<any>), out:Writeable<Message<CommandEvent>>) {
+    constructor(id:number, info:any, out:Writeable<Message<CommandEvent>>) {
         this.id = id;
         this.state = new GameStateImpl(); //TODO
         this.info = info;
-        this.replicator = new Replicator(this.state);
         this.out = out;
     }
 
-    public getState():GameState{
+    public getState():GameState {
         return this.state;
     }
 
@@ -51,6 +51,10 @@ class ClientUserGameImpl implements ClientUserGame {
             keepOrder: true,
             data: commandEvent
         });
+        var predictedCommand = this.predictedCommands[params[0]];
+        if (predictedCommand) {
+            predictedCommand.apply(null, params.slice(1));
+        }
     }
 
     private addCallback(fn:Function):number {
@@ -63,6 +67,18 @@ class ClientUserGameImpl implements ClientUserGame {
         return this.callbacks[id];
     }
 
+    public setPredicted(command:string, callback:Function):void {
+        this.predictedCommands[command] = callback;
+    }
+
+    public getReplicator():ReplicatorClient<any> {
+        return this.replicator;
+    }
+
+    public setReplicator(replicator:ReplicatorClient<any>):void {
+        this.replicator = replicator;
+        replicator.setState(this.state);
+    }
 }
 
 export = ClientUserGameImpl;

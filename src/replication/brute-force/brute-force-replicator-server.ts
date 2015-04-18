@@ -3,7 +3,7 @@
 
 import StateContainer=require('../state-container');
 
-class BruteForceReplicatorClient extends StateContainer implements ReplicatorServer<BruteForceMessage> {
+class BruteForceReplicatorServer extends StateContainer implements ReplicatorServer<BruteForceMessage> {
     typeId:number = 0;
 
     public update():Message<BruteForceMessage>[] {
@@ -22,4 +22,4 @@ class BruteForceReplicatorClient extends StateContainer implements ReplicatorSer
     }
 }
 
-export = BruteForceReplicatorClient;
+export = BruteForceReplicatorServer;

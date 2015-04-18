@@ -28,7 +28,6 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
         var server = this;
         var result = {
             write: function (event:CommandEvent) { //TODO check client data
-                console.log(event);
                 var params=[];
                 for (var i = 0; i < event.params.length; i++) {
                     params[i]=event.params[i];

@@ -3,6 +3,7 @@
 ///<reference path="..\id-provider.ts"/>
 interface GameState extends IDProvider {
     createEntity():Entity;
+    addEntity(e:Entity):void;
     removeEntity(e:Entity):void;
     forEach(callback:(e:Entity)=>void):void;
     setReplicator(replicator:ReplicatorServer<any>); //todo kellenek metódusok?

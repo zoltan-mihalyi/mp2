@@ -18,7 +18,7 @@ class ServerUserGameImpl implements ServerUserGame {
     constructor(game:Game, user:User) {
         this.game = game;
         this.user = user;
-        this.id = this.game.nextUserGameId();
+        this.id = game.nextUserGameId();
         this.idForUser = user.addUserGame(this);
         this.state = game.getState();
     }
@@ -54,6 +54,10 @@ class ServerUserGameImpl implements ServerUserGame {
     public setRelevanceSet(relevanceSet:RelevanceSet):void{
         this.state=relevanceSet;
         relevanceSet.setState(this.game.getState());
+    }
+
+    setPredicted(command:string, callback:Function):void {
+        //todo
     }
 }
 

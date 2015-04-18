@@ -6,6 +6,7 @@
 ///<reference path="replication\replicator-client.ts"/>
 ///<reference path="messaging\game-event.ts"/>
 ///<reference path="messaging\callback-event.ts"/>
+///<reference path="messaging\replication-event.ts"/>
 import ClientUserGameImpl=require('./game/client-user-game-impl');
 import BruteForceReplicatorClient = require('./replication/brute-force/brute-force-replicator-client');
 import DiffReplicatorClient = require('./replication/diff/diff-replicator-client');
@@ -27,12 +28,13 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
         this.out = out;
         return {
             write: function (data:UserEvent) {
-
+                console.log(data.eventType);
                 switch (data.eventType) {
                     case 'JOIN':
                         var joinEvent:JoinEvent = <JoinEvent>data;
-                        var replicator = getReplicator(joinEvent.replicator);
-                        var userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, replicator, out);
+                        var replicator:ReplicatorClient<any> = getReplicator(joinEvent.replicator);
+                        var userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, out);
+                        userGame.setReplicator(replicator);
                         client.games[joinEvent.gameId] = userGame;
                         client.gameListener.onJoin(userGame);
                         break;
@@ -43,6 +45,10 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
                     case 'CALLBACK':
                         var callbackEvent:CallbackEvent = <CallbackEvent>data;
                         client.games[callbackEvent.gameId].getCallback(callbackEvent.callbackId).apply(null, callbackEvent.params);
+                        break;
+                    case 'REPLICATION':
+                        var replicationEvent:ReplicationEvent = <ReplicationEvent>data;
+                        client.games[replicationEvent.gameId].getReplicator().onUpdate(replicationEvent.replicationData);
                         break;
                     default:
                         console.log('Unknown event: ' + data.eventType);
@@ -60,12 +66,12 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
     }
 }
 
-function getReplicator(id:number):(new (state:GameState)=> ReplicatorClient<any>) {
+function getReplicator(id:number):ReplicatorClient<any> {
     switch (id) {
         case 0:
-            return BruteForceReplicatorClient;
+            return new BruteForceReplicatorClient();
         case 1:
-            return DiffReplicatorClient;
+            return new DiffReplicatorClient();
     }
 }
 

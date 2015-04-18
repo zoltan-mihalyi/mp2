@@ -6,6 +6,7 @@ import PassiveDiffReplicatorServer = require('../src/replication/diff/passive-di
 import BruteForceReplicatorServer= require('../src/replication/brute-force/brute-force-replicator-server');
 import RelevanceSetImpl= require('../src/relevance/relevance-set-impl');
 import chunkCreator=require('./chunks');
+import shared=require('./shared');
 
 function createServer(gameEvents?:GameListener<ServerUserGame>) {
 
@@ -27,7 +28,6 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
                     callback('failed');
                 }
             });
-            //userGame.netUpdate();
         }
     }, 'login');
 
@@ -35,19 +35,13 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
         onJoin: function (userGame:ServerUserGame) {
             var relevanceSet = new RelevanceSetImpl();
             userGame.setRelevanceSet(relevanceSet);
-            userGame.addCommand('move', function (x:number, y:number) {
-                var x1 = player.get('x');
-                var y1 = player.get('y');
-
-                player.set('y', y + y1);
-                player.set('x', x + x1);
-
-            });
 
             var chunksGroup = relevanceSet.createVisibilityGroup();
             var staticGroup = relevanceSet.createVisibilityGroup();
 
             var player = game.getState().createEntity();
+            var sharedBound=shared(player);
+            userGame.addCommand('move', sharedBound.move);
             player.set('type', 'player');
             player.set('x', 24);
             player.set('y', 24);
@@ -62,12 +56,13 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
                 chunksGroup.removeEntities(function (entity:Entity) {
                     return dist(entity.get('x') + 8, entity.get('y') + 8, px, py) > 60;
                 });
-                for (var i = 0; i < chunks.length; i++) {
-                    var entity = chunks[i];
-                    if (dist(entity.get('x') + 8, entity.get('y') + 8, px, py) <= 20) {
-                        chunksGroup.add(entity);
+                game.getState().forEach(function(e:Entity){
+                    if(e.get('type')==='player' || e.get('type')==='chunk'){
+                        if (dist(e.get('x') + 8, e.get('y') + 8, px, py) <= 20) {
+                            chunksGroup.add(e);
+                        }
                     }
-                }
+                });
             }, 100);
 
             userGame.onLeave = function () {
@@ -91,7 +86,7 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
 
     setInterval(function () {
         game.netUpdate();
-    }, 45);
+    }, 200);
 
     return server;
 }
