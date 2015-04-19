@@ -18,7 +18,10 @@ class WebsocketServer {
             var target=server.accept({
                 write: function (m:Message<string>) {
                     //TODO reliable? keepOrder?
-                    ws.send(m.data);
+                    try {
+                        ws.send(m.data);
+                    }catch(e){
+                    }
                 },
                 close: function () {
                     ws.close();
@@ -27,7 +30,11 @@ class WebsocketServer {
 
             ws.on('message', function(message:string){
                 target.write(message);
-            })
+            });
+
+            ws.on('close', function(){
+                target.close();
+            });
         });
     }
 

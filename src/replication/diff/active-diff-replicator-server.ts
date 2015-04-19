@@ -1,14 +1,14 @@
 ///<reference path="../replicator-client.ts"/>
-///<reference path="..\..\game\game-state.ts"/>
+///<reference path="../../game/server-state.ts"/>
 ///<reference path="..\replicator-server.ts"/>
 ///<reference path="diff.ts"/>
 
 import StateContainer=require('../state-container');
-import GameStateImpl=require('../../game/game-state-impl');
+import ServerStateImpl=require('../../game/server-state-impl');
 
 class ActiveDiffReplicatorServer extends StateContainer implements ReplicatorServer<Diff> {
     typeId:number = 1;
-    private lastState:GameState = new GameStateImpl();
+    private lastState:ServerGameState = new ServerStateImpl();
 
     public update() {
         var diff:Diff = {

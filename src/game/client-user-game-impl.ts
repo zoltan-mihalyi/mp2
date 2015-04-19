@@ -2,27 +2,42 @@
 ///<reference path="client-user-game.ts"/>
 ///<reference path="..\messaging\writeable.ts"/>
 ///<reference path="..\messaging\command-event.ts"/>
-import GameStateImpl=require('./game-state-impl');
+///<reference path="..\predicted-command.ts"/>
+///<reference path="..\id-map.ts"/>
+import StateImpl = require('../game/state-impl');
+import IdSetImpl = require('../id-set-impl');
+import IdMapImpl = require('../id-map-impl');
+import EntityImpl = require('../game/entity-impl');
 
-class ClientUserGameImpl implements ClientUserGame {
+interface BooleanMap {
+    [index:string]:boolean;
+}
+
+interface PredictionInfo {
+    attrs:BooleanMap;
+    correction:(entity:Entity, key:string, value:any)=>void;
+}
+
+class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientState {
+    private entities:IdSet<Entity> = new IdSetImpl<Entity>();
     private info:any;
     private replicator:ReplicatorClient<any>;
     private out:Writeable<Message<CommandEvent>>;
     private id:number;
     private callbacks:{[index:number]:Function} = {};
     private nextCallbackId = 0;
-    private state:GameState;
-    private predictedCommands:{[index:string]:Function} = {};
+    private predictedCommands:{[index:string]:PredictedCommand} = {};
+    private predictedEntities:IdMap<EntityData,PredictionInfo> = new IdMapImpl<EntityData,PredictionInfo>();
 
     constructor(id:number, info:any, out:Writeable<Message<CommandEvent>>) {
+        super();
         this.id = id;
-        this.state = new GameStateImpl(); //TODO
         this.info = info;
         this.out = out;
     }
 
-    public getState():GameState {
-        return this.state;
+    public getState():ClientState {
+        return this;
     }
 
     public getInfo() {
@@ -46,14 +61,14 @@ class ClientUserGameImpl implements ClientUserGame {
             callbacks: callbacks
         };
 
-        this.out.write({ //TODO nem az egész executet kéne átadni tán
+        this.out.write({
             reliable: true,
             keepOrder: true,
             data: commandEvent
         });
         var predictedCommand = this.predictedCommands[params[0]];
         if (predictedCommand) {
-            predictedCommand.apply(null, params.slice(1));
+            predictedCommand.simulate.apply(null, params.slice(1));
         }
     }
 
@@ -67,8 +82,19 @@ class ClientUserGameImpl implements ClientUserGame {
         return this.callbacks[id];
     }
 
-    public setPredicted(command:string, callback:Function):void {
-        this.predictedCommands[command] = callback;
+    public setPredicted(predictedCommand:PredictedCommand) {
+        this.predictedCommands[predictedCommand.command] = predictedCommand;
+        for (var i = 0; i < predictedCommand.entities.length; i++) {
+            var entityInfo = predictedCommand.entities[i];
+            var attrsMap:BooleanMap = {};
+            for (var j = 0; j < entityInfo.attrs.length; j++) {
+                attrsMap[entityInfo.attrs[j]] = true;
+            }
+            this.predictedEntities.put(entityInfo.entity.toObject(), {
+                attrs: attrsMap,
+                correction: predictedCommand.correction
+            });
+        }
     }
 
     public getReplicator():ReplicatorClient<any> {
@@ -77,7 +103,52 @@ class ClientUserGameImpl implements ClientUserGame {
 
     public setReplicator(replicator:ReplicatorClient<any>):void {
         this.replicator = replicator;
-        replicator.setState(this.state);
+        replicator.setState(this);
+    }
+
+    contains(data:EntityData):boolean {
+        return this.entities.contains(data);
+    }
+
+    create(data:EntityData):void {
+        var newEntity = new EntityImpl(data.id);
+        for (var i in data) {
+            if (data.hasOwnProperty(i) && i !== 'id') {
+                newEntity.set(i, data[i]);
+            }
+        }
+        this.entities.put(newEntity);
+        this.onAdd(newEntity);
+    }
+
+    merge(data:EntityData):void {
+        if (this.contains(data)) {
+            var predicted = this.predictedEntities.contains(data);
+            if (predicted) {
+                var predictionInfo = this.predictedEntities.get(data);
+            }
+            var entity = this.entities.get(data);
+            for (var i in data) {
+                if (data.hasOwnProperty(i) && i !== 'id') {
+                    if (predicted && predictionInfo.attrs[i]) {
+                        predictionInfo.correction(entity, i, data[i]);
+                    } else {
+                        entity.set(i, data[i]);
+                    }
+                }
+            }
+        } else {
+            this.create(data); //todo reduce code size
+        }
+    }
+
+    forEach(callback:(e:Entity)=>void):void {
+        this.entities.forEach(callback);
+    }
+
+    remove(e:Entity):void {
+        this.entities.remove(e);
+        this.onRemove(e);
     }
 }
 

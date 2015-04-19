@@ -9,5 +9,6 @@ interface ServerUserGame extends UserGame, IDProvider {
     user:User;
     onLeave:Function;
     addCommand(name:string, callback:Function);
-    setRelevanceSet(relevanceSet:RelevanceSet):void
+    setRelevanceSet(relevanceSet:RelevanceSet):void;
+    getState():ReadableServerGameState;
 }

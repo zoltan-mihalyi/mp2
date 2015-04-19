@@ -3,7 +3,7 @@
 
 import shared=require('./shared');
 
-var theGame;
+var theGame:UserGame;
 
 var canvas:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
@@ -27,13 +27,13 @@ var clientEvents = {
     }
 };
 
-var players={};
+var players = {};
 
 function drawPixels(entity:Entity, add:boolean) {
     if (entity.get('type') === 'chunk') {
         var cx = entity.get('x');
         var cy = entity.get('y');
-        entity.forEach(function(key, value){
+        entity.forEach(function (key, value) {
             var x:any = key.split(';');
             if (x.length !== 2) {
                 return;
@@ -41,39 +41,52 @@ function drawPixels(entity:Entity, add:boolean) {
             var y = parseFloat(x[1]);
             x = parseFloat(x[0]);
             ctx.fillStyle = add ? entity.get(key) : '#ffffff';
-            ctx.fillRect(cx + x, cy + y, 1, 1);
+            ctx.fillRect((cx + x)*8, (cy + y)*8, 8, 8);
         });
     } else if (entity.get('type') === 'player') {
-        if(add) {
-            theGame.setPredicted('move', shared(entity).move); //todo melyik játékos predicted??
+        if (add) {
+            theGame.setPredicted({
+                command:'move',
+                entities:[{
+                    entity:entity,
+                    attrs:['x','y']
+                }],
+                simulate:shared.move(entity),
+                correction:function(entity:Entity, key:string,value:any){
+                    //skip new values
+                }
+            });
             players[entity.id] = entity;
+        } else {
+            delete players[entity.id];
         }
     }
 }
 
 document.onkeydown = function (e) {
     if (e.keyCode === 39) {
-        theGame.execute('move', 5, 0);
+        theGame.execute('move', 1, 0);
     }
     if (e.keyCode === 37) {
-        theGame.execute('move', -5, 0);
+        theGame.execute('move', -1, 0);
     }
     if (e.keyCode === 40) {
-        theGame.execute('move', 0, 5);
+        theGame.execute('move', 0, 1);
     }
     if (e.keyCode === 38) {
-        theGame.execute('move', 0, -5);
+        theGame.execute('move', 0, -1);
     }
 };
 
 setInterval(function () {
     var canvas = <HTMLCanvasElement>document.getElementById('canvas2');
-    canvas.width = canvas.width;
-    for(var i in players) {
+    canvas.width = 800;
+    canvas.height = 600;
+    for (var i in players) {
         var player = players[i];
 
         var context = canvas.getContext('2d');
-        context.fillRect(player.get('x') - 1, player.get('y') - 1, 3, 3);
+        context.fillRect(player.get('x')*8-8, player.get('y')*8-8, 24, 24);
     }
 }, 16);
 

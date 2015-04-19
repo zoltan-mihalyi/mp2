@@ -1,5 +1,6 @@
 ///<reference path="id-provider.ts"/>
-class IdMap<K extends IDProvider, V> {
+///<reference path="id-map.ts"/>
+class IdMapImpl<K extends IDProvider, V> implements IdMap<K,V> {
     private map:{[index:number]:V} = {};
 
     put(key:K, value:V) {
@@ -7,12 +8,16 @@ class IdMap<K extends IDProvider, V> {
     }
 
     contains(key:K):boolean {
-        return this.map.hasOwnProperty(key.id+'');
+        return this.map.hasOwnProperty(key.id + '');
     }
 
     get(key:K):V {
         return this.map[key.id];
     }
+
+    remove(key:K):void {
+        delete this.map[key.id];
+    }
 }
 
-export = IdMap;
+export = IdMapImpl;

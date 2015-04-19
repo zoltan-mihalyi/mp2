@@ -4,21 +4,22 @@
 import StateContainer=require('../state-container');
 import EntityImpl=require('../../game/entity-impl');
 
-class BruteForceReplicatorClient extends StateContainer implements ReplicatorClient<BruteForceMessage> {
-    public onUpdate(newState:BruteForceMessage):void {
-        this.state.forEach((e:Entity)=> {
-            this.state.removeEntity(e);
-        });
-        for (var i = 0; i < newState.length; i++) {
-            var newEntity = newState[i];
-            var entity = new EntityImpl(newEntity.id);
-            for (var j in  newEntity) {
-                if (j !== 'id') {
-                    entity[j] = newEntity[j];
-                }
+class BruteForceReplicatorClient implements ReplicatorClient<BruteForceMessage> { //todo factory
+    private state:ClientState; //todo move to common
+
+    public onUpdate(entities:BruteForceMessage):void {
+        this.state.forEach((entity:Entity)=> { //delete old
+            if (!entities[entity.id]) {
+                this.state.remove(entity);
             }
-            this.state.addEntity(entity);
+        });
+        for (var i in entities) {
+            this.state.merge(entities[i]);
         }
+    }
+
+    public setState(state:ClientState):void {
+        this.state = state;
     }
 }
 

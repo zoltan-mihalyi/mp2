@@ -12,7 +12,8 @@ class ServerUserGameImpl implements ServerUserGame {
     };
     public id; //TODO
     public idForUser;
-    private state:GameState;
+    private state:ReadableServerGameState;
+    private stateIsRelevanceSet:boolean = false;
     private commands:{[index:string]:Function} = {}; //todo
 
     constructor(game:Game, user:User) {
@@ -27,7 +28,7 @@ class ServerUserGameImpl implements ServerUserGame {
         this.commands[command].apply(this, params); //todo try
     }
 
-    getState():GameState {
+    getState():ReadableServerGameState {
         return this.state;
     }
 
@@ -45,19 +46,29 @@ class ServerUserGameImpl implements ServerUserGame {
             keepOrder: true,
             data: leaveEvent
         });
+        if(this.stateIsRelevanceSet){
+            (<RelevanceSet>this.state).forEach((entity:Entity)=>{
+                (<RelevanceSet>this.state).removeEntity(entity); //todo removeAll
+            });
+        }
+        this.onLeave();
     }
 
     public addCommand(name:string, callback:Function) {
         this.commands[name] = callback;
     }
 
-    public setRelevanceSet(relevanceSet:RelevanceSet):void{
-        this.state=relevanceSet;
+    public setRelevanceSet(relevanceSet:RelevanceSet):void {
+        if (this.stateIsRelevanceSet) {
+            throw new Error('relevance set already set!');
+        }
+        this.stateIsRelevanceSet = true;
+        this.state = relevanceSet;
         relevanceSet.setState(this.game.getState());
     }
 
-    setPredicted(command:string, callback:Function):void {
-        //todo
+    setPredicted():void {
+        //skip
     }
 }
 

@@ -3,8 +3,9 @@
 
 //import Set=require('../id-set-impl');
 
-class EntityImpl implements Entity {
+class EntityImpl implements Entity, EntityData {
     public id:number;
+    [index:string]:any;
 
     constructor(id:number) {
         this.id = id;
@@ -27,6 +28,10 @@ class EntityImpl implements Entity {
                 callback(i, this[i]);
             }
         }
+    }
+
+    public toObject():EntityData {
+        return this;
     }
 }
 

@@ -28,9 +28,9 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
         var server = this;
         var result = {
             write: function (event:CommandEvent) { //TODO check client data
-                var params=[];
+                var params = [];
                 for (var i = 0; i < event.params.length; i++) {
-                    params[i]=event.params[i];
+                    params[i] = event.params[i];
                 }
                 for (var i = 0; i < event.callbacks.length; i++) {
                     var callbackIndex = event.callbacks[i];
@@ -51,12 +51,15 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
                     })(params[callbackIndex]);
                 }
                 var userGame = user.getUserGame(event.gameId);
-                userGame.execute.apply(userGame,params);
+                userGame.execute.apply(userGame, params);
             },
             close: function () {
                 if (server.connectionListener.onDisconnect) {
                     server.connectionListener.onDisconnect(user); //TODO clean up usergames
                 }
+                user.forEachUserGame(function(userGame:ServerUserGame){
+                    userGame.leave();
+                });
             }
         };
         var user = new UserImpl(out);

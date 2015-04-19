@@ -1,18 +1,18 @@
 ///<reference path="game-listener.ts"/>
-///<reference path="game-state.ts"/>
+///<reference path="server-state.ts"/>
 ///<reference path="..\messaging\join-event.ts"/>
 ///<reference path="..\id-set.ts"/>
 ///<reference path="..\id-map.ts"/>
 ///<reference path="..\messaging\message.ts"/>
 import IdSetImpl=require('../id-set-impl');
 import IdMapImpl=require('../id-map-impl');
-import GameStateImpl=require('./game-state-impl');
+import ServerStateImpl=require('./server-state-impl');
 import ServerUserGameImpl=require('./server-user-game-impl');
 import ServerEvents=require('../messaging/server-events');
 
 class Game {
     private info:Object;
-    private state:GameState;
+    private state:ServerGameState;
     private userGames:IdSetImpl<ServerUserGame> = new IdSetImpl<ServerUserGame>();
     private gameListener:GameListener<ServerUserGame>;
     private _nextUserGameId:number = 0;
@@ -21,7 +21,7 @@ class Game {
     constructor(gameListener:GameListener<ServerUserGame>, info:Object) {
         this.gameListener = gameListener;
         this.info = info;
-        this.setState(new GameStateImpl())
+        this.setState(new ServerStateImpl())
     }
 
     public nextUserGameId() {
@@ -36,12 +36,12 @@ class Game {
         return this.info;
     }
 
-    public setState(state:GameState):void {
+    public setState(state:ServerGameState):void {
         state.id = 0;
         this.state = state;
     }
 
-    public getState():GameState {
+    public getState():ServerGameState {
         return this.state;
     }
 
@@ -72,8 +72,8 @@ class Game {
     }
 
     public netUpdate() {
-        var stateMessages:IdMap<GameState, Message<any>[]> = new IdMapImpl<GameState,Message<any>[]>();
-        this.userGames.forEach(function (userGame) {
+        var stateMessages:IdMap<ReadableServerGameState, Message<any>[]> = new IdMapImpl<ReadableServerGameState,Message<any>[]>();
+        this.userGames.forEach(function (userGame:ServerUserGame) {
             var state = userGame.getState();
             var messages:Message<any>[];
             if (!stateMessages.contains(state)) {

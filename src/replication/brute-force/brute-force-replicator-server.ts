@@ -7,11 +7,13 @@ class BruteForceReplicatorServer extends StateContainer implements ReplicatorSer
     typeId:number = 0;
 
     public update():Message<BruteForceMessage>[] {
-        var entities = [];
-        this.state.forEach(function (entity) {
-            entities.push(entity);
+        var entities:BruteForceMessage = {};
+        var num = 0;
+        this.state.forEach(function (entity:Entity) {
+            entities[entity.id] = entity.toObject();
+            num++;
         });
-        if (entities.length === 0) {
+        if (num === 0) {
             return [];
         }
         return [{ //TODO use array

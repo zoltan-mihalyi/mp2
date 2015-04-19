@@ -1,4 +1,4 @@
-///<reference path="..\game\game-state.ts"/>
+///<reference path="../game/server-state.ts"/>
 ///<reference path="visibility-group.ts"/>
 ///<reference path="..\id-set.ts"/>
 ///<reference path="..\game\entity.ts"/>
@@ -9,12 +9,13 @@ interface EntityMap<T>{
     decrement(e:Entity):T;
 }
 
-interface RelevanceSet extends GameState{
+interface RelevanceSet extends ReadableServerGameState{
     createVisibilityGroup(name:string):VisibilityGroup;
     toHide:IdSet<Entity>;
     toShow:IdSet<Entity>;
+    entities:IdSet<Entity>;
     visibleNum:EntityMap<number>;
-    setState(state:GameState):void;
-    containsEntity(entity:Entity):boolean;
-    addEntity(entity:Entity);
+    setState(state:ServerGameState):void;
+    getState():ServerGameState;
+    removeEntity(entity:Entity):void;
 }

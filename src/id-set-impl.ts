@@ -8,12 +8,16 @@ class IdSetImpl<T extends IDProvider> implements IdSet<T> {
         this.map[element.id] = element;
     }
 
-    public remove(item:T) {
-        delete this.map[item.id];
+    public get(element:IDProvider):T {
+        return this.map[element.id];
     }
 
-    public contains(item:T) {
-        return this.map.hasOwnProperty(item.id + '');
+    public remove(element:T) {
+        delete this.map[element.id];
+    }
+
+    public contains(element:T) {
+        return this.map.hasOwnProperty(element.id + '');
     }
 
     public forEach(callback:(value?:T, key?:string)=>void) {

@@ -5,6 +5,6 @@ import DelayTransformer=require('../src/messaging/delay-transformer');
 
 var transformer = new JSONTransformer(createServer());
 
-var delayTransformer = new DelayTransformer(transformer,1,500);
+var delayTransformer = new DelayTransformer(transformer, 1, 500);
 
 var websocketServer = new WebsocketServer(delayTransformer, 1111);

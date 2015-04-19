@@ -40,8 +40,7 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
             var staticGroup = relevanceSet.createVisibilityGroup();
 
             var player = game.getState().createEntity();
-            var sharedBound=shared(player);
-            userGame.addCommand('move', sharedBound.move);
+            userGame.addCommand('move', shared.move(player));
             player.set('type', 'player');
             player.set('x', 24);
             player.set('y', 24);
@@ -56,8 +55,8 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
                 chunksGroup.removeEntities(function (entity:Entity) {
                     return dist(entity.get('x') + 8, entity.get('y') + 8, px, py) > 60;
                 });
-                game.getState().forEach(function(e:Entity){
-                    if(e.get('type')==='player' || e.get('type')==='chunk'){
+                game.getState().forEach(function (e:Entity) {
+                    if (e.get('type') === 'player' || e.get('type') === 'chunk') {
                         if (dist(e.get('x') + 8, e.get('y') + 8, px, py) <= 20) {
                             chunksGroup.add(e);
                         }

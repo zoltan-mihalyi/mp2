@@ -1,7 +1,7 @@
 ///<reference path="..\messaging\message.ts"/>
-///<reference path="..\game\game-state.ts"/>
+///<reference path="../game/server-state.ts"/>
 interface ReplicatorServer<T>{
-    setState(state:GameState):void;
+    setState(state:ReadableServerGameState):void;
     update():Message<T>[];
     typeId:number;
 }

@@ -4,6 +4,7 @@
   "description": "Multiplayer framework",
   "main": "index.js",
   "scripts": {
+    "start":"node test/test-server-remote.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -14,6 +15,6 @@
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-typescript": "^0.6.1",
-    "typescript": "^1.4.1"
+    "typescript": "1.4.1"
   }
 }

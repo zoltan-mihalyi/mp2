@@ -15,12 +15,12 @@ class VisibilityGroupImpl implements VisibilityGroup {
 
     public add(entity:Entity):void {
         var relevanceSet = this.relevanceSet;
-        if (!relevanceSet.containsEntity(entity)) {
+        if (!relevanceSet.entities.contains(entity)) {
             relevanceSet.toHide.remove(entity);
             relevanceSet.toShow.put(entity);
-            relevanceSet.addEntity(entity);
+            relevanceSet.entities.put(entity);
             relevanceSet.visibleNum.set(entity, 0);
-            //entity.visibleFor[relevanceSet.id] = relevanceSet;
+            relevanceSet.getState().entityAddedToRelevanceSet(entity, relevanceSet);
         }
 
         if (!this.visible.contains(entity)) {
@@ -29,18 +29,20 @@ class VisibilityGroupImpl implements VisibilityGroup {
         }
     }
 
-    public remove(entity:Entity) {
+    public remove(entity:Entity):void {
         if (!this.visible.contains(entity)) {
             return;
         }
         this.visible.remove(entity);
 
-        var num = this.relevanceSet.visibleNum.decrement(entity);
+        var relevanceSet = this.relevanceSet;
+        var num = relevanceSet.visibleNum.decrement(entity);
         if (num === 0) {
-            this.relevanceSet.toHide.put(entity);
-            this.relevanceSet.toShow.remove(entity);
-            this.relevanceSet.removeEntity(entity);
-            this.relevanceSet.visibleNum.remove(entity);
+            relevanceSet.toHide.put(entity);
+            relevanceSet.toShow.remove(entity);
+            relevanceSet.entities.remove(entity);
+            relevanceSet.visibleNum.remove(entity);
+            relevanceSet.getState().entityRemovedFromRelevanceSet(entity, relevanceSet);
         }
     }
 
