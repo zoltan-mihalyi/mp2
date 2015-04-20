@@ -1,5 +1,6 @@
 ///<reference path="..\src\game\client-user-game.ts"/>
 ///<reference path="..\src\game\user-game.ts"/>
+///<reference path="..\src\game\game-listener.ts"/>
 
 import shared=require('./shared');
 
@@ -8,7 +9,7 @@ var theGame:UserGame;
 var canvas:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-var clientEvents = {
+var clientEvents:GameListener = {
     onJoin: function (userGame:UserGame) {
 
         if (userGame.getInfo() === 'login') {
@@ -41,18 +42,18 @@ function drawPixels(entity:Entity, add:boolean) {
             var y = parseFloat(x[1]);
             x = parseFloat(x[0]);
             ctx.fillStyle = add ? entity.get(key) : '#ffffff';
-            ctx.fillRect((cx + x)*8, (cy + y)*8, 8, 8);
+            ctx.fillRect((cx + x) * 8, (cy + y) * 8, 8, 8);
         });
     } else if (entity.get('type') === 'player') {
         if (add) {
             theGame.setPredicted({
-                command:'move',
-                entities:[{
-                    entity:entity,
-                    attrs:['x','y']
+                command: 'move',
+                entities: [{
+                    entity: entity,
+                    attrs: ['x', 'y']
                 }],
-                simulate:shared.move(entity),
-                correction:function(entity:Entity, key:string,value:any){
+                simulate: shared.move(entity),
+                correction: function (entity:Entity, key:string, value:any) {
                     //skip new values
                 }
             });
@@ -86,7 +87,7 @@ setInterval(function () {
         var player = players[i];
 
         var context = canvas.getContext('2d');
-        context.fillRect(player.get('x')*8-8, player.get('y')*8-8, 24, 24);
+        context.fillRect(player.get('x') * 8 - 8, player.get('y') * 8 - 8, 24, 24);
     }
 }, 16);
 

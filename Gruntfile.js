@@ -30,5 +30,5 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-typescript');
 
-    grunt.registerTask('default', ['typescript:node']);
+    grunt.registerTask('default', ['typescript:browser']);
 };

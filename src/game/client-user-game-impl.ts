@@ -78,10 +78,6 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
         return id;
     }
 
-    public getCallback(id:number):Function {
-        return this.callbacks[id];
-    }
-
     public setPredicted(predictedCommand:PredictedCommand) {
         this.predictedCommands[predictedCommand.command] = predictedCommand;
         for (var i = 0; i < predictedCommand.entities.length; i++) {
@@ -149,6 +145,10 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
     remove(e:Entity):void {
         this.entities.remove(e);
         this.onRemove(e);
+    }
+
+    runCallback(id:number, params:any[]):void {
+        this.callbacks[id].apply(null, params)
     }
 }
 

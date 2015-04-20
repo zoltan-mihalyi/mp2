@@ -29,6 +29,10 @@ class ReadableServerStateImpl extends StateImpl implements ReadableServerGameSta
         this.replicator = replicator;
         replicator.setState(this);
     }
+
+    public netUpdate(){
+
+    }
 }
 
 export = ReadableServerStateImpl;

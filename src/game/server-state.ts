@@ -7,6 +7,7 @@ interface ReadableServerGameState extends IDProvider, State {
     forEach(callback:(e:Entity)=>void):void;
     contains(entity:Entity):boolean;
     getReplicator():ReplicatorServer<any>;
+    netUpdate();
 }
 
 interface ServerGameState extends ReadableServerGameState {

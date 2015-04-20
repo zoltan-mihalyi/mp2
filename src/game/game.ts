@@ -1,4 +1,3 @@
-///<reference path="game-listener.ts"/>
 ///<reference path="server-state.ts"/>
 ///<reference path="..\messaging\join-event.ts"/>
 ///<reference path="..\id-set.ts"/>
@@ -10,16 +9,17 @@ import ServerStateImpl=require('./server-state-impl');
 import ServerUserGameImpl=require('./server-user-game-impl');
 import ServerEvents=require('../messaging/server-events');
 
-class Game {
-    private info:Object;
+import GameListenerImpl=require('./game-listener-impl');
+
+class Game extends GameListenerImpl implements GameListener {
+    private info:any;
     private state:ServerGameState;
     private userGames:IdSetImpl<ServerUserGame> = new IdSetImpl<ServerUserGame>();
-    private gameListener:GameListener<ServerUserGame>;
     private _nextUserGameId:number = 0;
     private _nextGameStateId:number = 0;
 
-    constructor(gameListener:GameListener<ServerUserGame>, info:Object) {
-        this.gameListener = gameListener;
+    constructor(gameListener:GameListener, info:any) {
+        super(gameListener);
         this.info = info;
         this.setState(new ServerStateImpl())
     }
@@ -52,18 +52,8 @@ class Game {
     public addUser(user:User):ServerUserGame {
         var userGame = new ServerUserGameImpl(this, user);
         this.userGames.put(userGame);
-        this.gameListener.onJoin(userGame);
-        var joinEvent:JoinEvent = {
-            eventType: 'JOIN',
-            gameId: userGame.idForUser,
-            info: this.info,
-            replicator: userGame.getState().getReplicator().typeId
-        };
-        user.send({
-            reliable: true,
-            keepOrder: true,
-            data: joinEvent
-        });
+        this.onJoin(userGame);
+        user.onJoin(userGame);
         return userGame;
     }
 
@@ -73,8 +63,9 @@ class Game {
 
     public netUpdate() {
         var stateMessages:IdMap<ReadableServerGameState, Message<any>[]> = new IdMapImpl<ReadableServerGameState,Message<any>[]>();
-        this.userGames.forEach(function (userGame:ServerUserGame) {
+        this.userGames.forEach((userGame:ServerUserGame)=> {
             var state = userGame.getState();
+            state.netUpdate();
             var messages:Message<any>[];
             if (!stateMessages.contains(state)) {
                 messages = state.getReplicator().update();
@@ -85,16 +76,9 @@ class Game {
 
             for (var i = 0; i < messages.length; i++) {
                 var message = messages[i];
-                var replicationEvent:ReplicationEvent = {
-                    eventType: 'REPLICATION',
-                    gameId: userGame.idForUser,
-                    replicationData: message.data
-                };
-                userGame.user.send({
-                    reliable: message.reliable,
-                    keepOrder: message.keepOrder,
-                    data: replicationEvent
-                });
+                userGame.user.onReplication(userGame, message);
+                this.onReplication(userGame, message);
+
             }
         });
     }

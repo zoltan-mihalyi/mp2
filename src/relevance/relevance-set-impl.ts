@@ -54,5 +54,16 @@ class RelevanceSetImpl extends ReadableServerStateImpl implements RelevanceSet {
             this.visibilityGroups[i].remove(entity);
         }
     }
+
+    public netUpdate() {
+        this.toShow.forEach((e:Entity)=> {
+            this.onAdd(e);
+            this.toShow.remove(e);
+        });
+        this.toHide.forEach((e:Entity)=> {
+            this.onRemove(e);
+            this.toHide.remove(e);
+        });
+    }
 }
 export = RelevanceSetImpl;

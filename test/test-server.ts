@@ -1,4 +1,3 @@
-///<reference path="..\src\game\game-listener.ts"/>
 import Server = require('../src/server');
 
 import Game= require('../src/game/game');
@@ -8,13 +7,11 @@ import RelevanceSetImpl= require('../src/relevance/relevance-set-impl');
 import chunkCreator=require('./chunks');
 import shared=require('./shared');
 
-function createServer(gameEvents?:GameListener<ServerUserGame>) {
-
     var server = new Server({
         onConnect: function (user) {
             login.addUser(user);
         }
-    }, gameEvents);
+    });
 
     var login = new Game({
         onJoin: function (userGame:ServerUserGame) {
@@ -87,7 +84,4 @@ function createServer(gameEvents?:GameListener<ServerUserGame>) {
         game.netUpdate();
     }, 200);
 
-    return server;
-}
-
-export = createServer;
+export = server;

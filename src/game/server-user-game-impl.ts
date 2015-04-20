@@ -37,15 +37,8 @@ class ServerUserGameImpl implements ServerUserGame {
     }
 
     leave() {
-        var leaveEvent:GameEvent = {
-            eventType: 'LEAVE',
-            gameId: this.id
-        };
-        this.user.send({
-            reliable: true,
-            keepOrder: true,
-            data: leaveEvent
-        });
+        this.user.onLeave(this);
+        this.game.onLeave(this);
         if(this.stateIsRelevanceSet){
             (<RelevanceSet>this.state).forEach((entity:Entity)=>{
                 (<RelevanceSet>this.state).removeEntity(entity); //todo removeAll

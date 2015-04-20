@@ -1,5 +1,4 @@
 ///<reference path="connection-accepter.ts"/>
-///<reference path="game\game-listener.ts"/>
 ///<reference path="messaging\user-event.ts"/>
 ///<reference path="messaging\join-event.ts"/>
 ///<reference path="messaging\command-event.ts"/>
@@ -7,48 +6,56 @@
 ///<reference path="messaging\game-event.ts"/>
 ///<reference path="messaging\callback-event.ts"/>
 ///<reference path="messaging\replication-event.ts"/>
+///<reference path="game\game-listener.ts"/>
 import ClientUserGameImpl=require('./game/client-user-game-impl');
 import BruteForceReplicatorClient = require('./replication/brute-force/brute-force-replicator-client');
 import DiffReplicatorClient = require('./replication/diff/diff-replicator-client');
 
 class Client implements ConnectionAccepter<UserEvent,GameEvent> {
     private out:Writeable<Message<GameEvent>>;
-    private gameListener:GameListener<ClientUserGame>;
-    private games:{[index:number]:ClientUserGameImpl} = {};
+    private listener:GameListener;
+    private games:{[index:number]:ClientUserGame} = {};
 
-    constructor(gameListener:GameListener<ClientUserGame>) {
-        this.gameListener = gameListener;
+    constructor(listener:GameListener) {
+        this.listener = listener;
     }
 
     public accept(out:Writeable<Message<CommandEvent>>):Writeable<UserEvent> {
         var client = this;
+        var listener = this.listener;
         if (this.out) {
             throw new Error('Client cannot accept more than one connection');
         }
         this.out = out;
         return {
             write: function (data:UserEvent) {
+                var userGame:ClientUserGame;
                 console.log(data.eventType);
                 switch (data.eventType) {
                     case 'JOIN':
                         var joinEvent:JoinEvent = <JoinEvent>data;
                         var replicator:ReplicatorClient<any> = getReplicator(joinEvent.replicator);
-                        var userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, out);
+                        userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, out);
                         userGame.setReplicator(replicator);
                         client.games[joinEvent.gameId] = userGame;
-                        client.gameListener.onJoin(userGame);
+                        listener.onJoin(userGame);
                         break;
                     case 'LEAVE':
                         var leaveEvent:GameEvent = <GameEvent>data;
                         //TODO cleanup
+                        listener.onLeave(client.games[leaveEvent.gameId]);
                         break;
                     case 'CALLBACK':
                         var callbackEvent:CallbackEvent = <CallbackEvent>data;
-                        client.games[callbackEvent.gameId].getCallback(callbackEvent.callbackId).apply(null, callbackEvent.params);
+                        userGame = client.games[callbackEvent.gameId];
+                        userGame.runCallback(callbackEvent.callbackId, callbackEvent.params);
+                        listener.onCallback(userGame,callbackEvent.callbackId,callbackEvent.params);
                         break;
                     case 'REPLICATION':
                         var replicationEvent:ReplicationEvent = <ReplicationEvent>data;
-                        client.games[replicationEvent.gameId].getReplicator().onUpdate(replicationEvent.replicationData);
+                        userGame = client.games[replicationEvent.gameId];
+                        userGame.getReplicator().onUpdate(replicationEvent.replicationData);
+                        listener.onReplication(userGame, replicationEvent.replicationData);
                         break;
                     default:
                         console.log('Unknown event: ' + data.eventType);
@@ -59,10 +66,6 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
                 client.out = null; //TODO more cleanup
             }
         };
-    }
-
-    write(message:string) {
-        var client = this;
     }
 }
 

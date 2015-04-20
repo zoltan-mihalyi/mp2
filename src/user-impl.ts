@@ -2,14 +2,14 @@
 ///<reference path="messaging\writeable.ts"/>
 ///<reference path="messaging/user-event.ts"/>
 ///<reference path="game\server-user-game.ts"/>
-class UserImpl implements User {
-    private nextId = 0;
-    private out:Writeable<Message<UserEvent>>;
-    private userGames:{[index:number]:ServerUserGame} = {};
+///<reference path="messaging\join-event.ts"/>
+///<reference path="messaging\replication-event.ts"/>
 
-    constructor(out:Writeable<Message<UserEvent>>) {
-        this.out = out;
-    }
+import GameListenerImpl=require('./game/game-listener-impl');
+
+class UserImpl extends GameListenerImpl implements User {
+    private nextId = 0;
+    private userGames:{[index:number]:ServerUserGame} = {};
 
     public getUserGame(id:number):UserGame {
         return this.userGames[id];
@@ -21,11 +21,7 @@ class UserImpl implements User {
         return id;
     }
 
-    public send(message:Message<UserEvent>) {
-        this.out.write(message);
-    }
-
-    public forEachUserGame(callback:(ug:ServerUserGame)=>void) {
+    public forEachUserGame(callback:(ug:ServerUserGame)=>void):void {
         for (var i in this.userGames) {
             callback(this.userGames[i]);
         }
