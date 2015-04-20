@@ -7,9 +7,10 @@
 ///<reference path="messaging\callback-event.ts"/>
 ///<reference path="messaging\replication-event.ts"/>
 ///<reference path="game\game-listener.ts"/>
-import ClientUserGameImpl=require('./game/client-user-game-impl');
+import ClientUserGameImpl = require('./game/client-user-game-impl');
 import BruteForceReplicatorClient = require('./replication/brute-force/brute-force-replicator-client');
 import DiffReplicatorClient = require('./replication/diff/diff-replicator-client');
+import GameListenerImpl = require('./game/game-listener-impl');
 
 class Client implements ConnectionAccepter<UserEvent,GameEvent> {
     private out:Writeable<Message<GameEvent>>;
@@ -17,7 +18,7 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
     private games:{[index:number]:ClientUserGame} = {};
 
     constructor(listener:GameListener) {
-        this.listener = listener;
+        this.listener = new GameListenerImpl(listener);
     }
 
     public accept(out:Writeable<Message<CommandEvent>>):Writeable<UserEvent> {
@@ -49,7 +50,7 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
                         var callbackEvent:CallbackEvent = <CallbackEvent>data;
                         userGame = client.games[callbackEvent.gameId];
                         userGame.runCallback(callbackEvent.callbackId, callbackEvent.params);
-                        listener.onCallback(userGame,callbackEvent.callbackId,callbackEvent.params);
+                        listener.onCallback(userGame, callbackEvent.callbackId, callbackEvent.params);
                         break;
                     case 'REPLICATION':
                         var replicationEvent:ReplicationEvent = <ReplicationEvent>data;
