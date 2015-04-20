@@ -44,19 +44,23 @@ function drawPixels(entity:Entity, add:boolean) {
             ctx.fillStyle = add ? entity.get(key) : '#ffffff';
             ctx.fillRect((cx + x) * 8, (cy + y) * 8, 8, 8);
         });
-    } else if (entity.get('type') === 'player') {
+    } else if (entity.get('type') === 'playerController') {
+        var player = entity.getLink('player');
         if (add) {
             theGame.setPredicted({
                 command: 'move',
                 entities: [{
-                    entity: entity,
+                    entity: player,
                     attrs: ['x', 'y']
                 }],
-                simulate: shared.move(entity),
-                correction: function (entity:Entity, key:string, value:any) {
+                simulate: shared.move(player),
+                correction: function (player:Entity, key:string, value:any) {
                     //skip new values
                 }
             });
+        }
+    } else if (entity.get('type') === 'player') {
+        if (add) {
             players[entity.id] = entity;
         } else {
             delete players[entity.id];

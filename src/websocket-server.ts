@@ -10,9 +10,9 @@ class WebsocketServer {
     private server:ConnectionAccepter<string,string>;
     private wss;
 
-    constructor(server:ConnectionAccepter<string,string>, port:number) {
+    constructor(server:ConnectionAccepter<string,string>, opts:any) {
         this.server = server;
-        this.wss = new WSServer({port: port});
+        this.wss = new WSServer(opts);
 
         this.wss.on('connection', function (ws) {
             var target=server.accept({

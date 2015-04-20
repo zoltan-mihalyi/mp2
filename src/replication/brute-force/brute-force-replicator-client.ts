@@ -8,14 +8,16 @@ class BruteForceReplicatorClient implements ReplicatorClient<BruteForceMessage> 
     private state:ClientState; //todo move to common
 
     public onUpdate(entities:BruteForceMessage):void {
+        var batch=this.state.createBatch();
         this.state.forEach((entity:Entity)=> { //delete old
             if (!entities[entity.id]) {
-                this.state.remove(entity);
+                batch.remove(entity);
             }
         });
         for (var i in entities) {
-            this.state.merge(entities[i]);
+            batch.merge(entities[i]);
         }
+        batch.apply();
     }
 
     public setState(state:ClientState):void {

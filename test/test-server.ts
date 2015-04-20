@@ -37,11 +37,15 @@ import shared=require('./shared');
             var staticGroup = relevanceSet.createVisibilityGroup();
 
             var player = game.getState().createEntity();
+            var playerController = game.getState().createEntity();
+            playerController.attach('player',player);
+            playerController.set('type','playerController');
             userGame.addCommand('move', shared.move(player));
             player.set('type', 'player');
             player.set('x', 24);
             player.set('y', 24);
             staticGroup.add(player);
+            staticGroup.add(playerController);
             staticGroup.add(world);
 
             var intervalId = setInterval(function () {

@@ -8,4 +8,4 @@ var client = new Client(clientEvents);
 
 var transformer = new JSONTransformer(client);
 
-var wsc = new WebsocketClient(transformer, 'ws://localhost:1111');
+var wsc = new WebsocketClient(transformer, 'ws://' + location.host);

@@ -13,7 +13,11 @@ class ServerStateImpl extends ReadableServerStateImpl implements ServerGameState
     private entityRelevanceSets:IdMap<Entity,RelevanceSet[]> = new IdMapImpl<Entity,RelevanceSet[]>();
 
     createEntity():Entity {
-        var entity = new EntityImpl(++this.nextId);
+        var entity = new EntityImpl({
+            id: ++this.nextId,
+            attrs: {},
+            links: {}
+        }, this.entities);
         this.addEntity(entity);
         return entity; //TODO
     }

@@ -106,45 +106,77 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
         return this.entities.contains(data);
     }
 
-    create(data:EntityData):void {
-        var newEntity = new EntityImpl(data.id);
-        for (var i in data) {
-            if (data.hasOwnProperty(i) && i !== 'id') {
-                newEntity.set(i, data[i]);
+    createBatch():ClientStateBatch {
+        var toRemove:Entity[]=[];
+        var toMerge:EntityData[]=[];
+        var mergeResult:Entity[]=[];
+        return {
+            merge:(e:EntityData)=>{
+                toMerge.push(e);
+            },
+            remove:(e:Entity):void=>{
+                toRemove.push(e);
+            },
+            apply:()=>{
+                for(var i=0;i<toRemove.length;i++){
+                    this.entities.remove(toRemove[i]);
+                }
+                for(var i=0;i<toRemove.length;i++){
+                    this.onRemove(toRemove[i]);
+                }
+                for(var i=0;i<toMerge.length;i++){
+                    mergeResult.push(this.merge(toMerge[i]));
+                }
+                for(var i=0;i<mergeResult.length;i++){
+                    if(mergeResult[i]!==null){
+                        this.onAdd(mergeResult[i]);
+                    }
+                }
             }
-        }
-        this.entities.put(newEntity);
-        this.onAdd(newEntity);
+        };
     }
 
-    merge(data:EntityData):void {
+    private merge(data:EntityData):Entity {
         if (this.contains(data)) {
             var predicted = this.predictedEntities.contains(data);
             if (predicted) {
                 var predictionInfo = this.predictedEntities.get(data);
             }
             var entity = this.entities.get(data);
-            for (var i in data) {
-                if (data.hasOwnProperty(i) && i !== 'id') {
+            for (var i in data.attrs) {
+                if (data.attrs.hasOwnProperty(i)) {
                     if (predicted && predictionInfo.attrs[i]) {
-                        predictionInfo.correction(entity, i, data[i]);
+                        predictionInfo.correction(entity, i, data.attrs[i]);
                     } else {
-                        entity.set(i, data[i]);
+                        entity.set(i, data.attrs[i]);
                     }
                 }
             }
-        } else {
-            this.create(data); //todo reduce code size
+            for (var i in data.links) {
+                if (data.links.hasOwnProperty(i)) {
+                    entity.attachId(i, data.links[i]);
+                }
+            }
+            return null;
+        } else { //todo reduce code size
+            var newEntity = new EntityImpl(data, this.entities);
+            for (var i in data.attrs) {
+                if (data.attrs.hasOwnProperty(i)) {
+                    newEntity.set(i, data.attrs[i]);
+                }
+            }
+            this.entities.put(newEntity);
+            for (var i in data.links) {
+                if (data.links.hasOwnProperty(i)) {
+                    newEntity.attachId(i, data.links[i]);
+                }
+            }
+            return newEntity
         }
     }
 
     forEach(callback:(e:Entity)=>void):void {
         this.entities.forEach(callback);
-    }
-
-    remove(e:Entity):void {
-        this.entities.remove(e);
-        this.onRemove(e);
     }
 
     runCallback(id:number, params:any[]):void {
