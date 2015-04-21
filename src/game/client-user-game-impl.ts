@@ -158,19 +158,9 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
                 }
             }
             return null;
-        } else { //todo reduce code size
+        } else {
             var newEntity = new EntityImpl(data, this.entities);
-            for (var i in data.attrs) {
-                if (data.attrs.hasOwnProperty(i)) {
-                    newEntity.set(i, data.attrs[i]);
-                }
-            }
             this.entities.put(newEntity);
-            for (var i in data.links) {
-                if (data.links.hasOwnProperty(i)) {
-                    newEntity.attachId(i, data.links[i]);
-                }
-            }
             return newEntity
         }
     }
