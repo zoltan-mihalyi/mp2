@@ -1,6 +1,4 @@
-///<reference path="../game/server-state.ts"/>
-///<reference path="../game/client-state.ts"/>
+///<reference path="..\state\client-state.ts"/>
 interface ReplicatorClient<T> {
-    setState(state:ClientState):void;
-    onUpdate(message:T):void;
+    onUpdate(message:T, batch:ReplicationClientStateBatch):void;
 }

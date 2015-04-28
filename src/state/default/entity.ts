@@ -1,4 +1,4 @@
-/// <reference path="../id-provider.ts" />
+/// <reference path="../../id-provider.ts" />
 
 interface EntityData extends IDProvider {
     attrs:{[index:string]:any};
@@ -13,4 +13,5 @@ interface Entity extends IDProvider {
     getLink(name:string):Entity;
     forEach(callback:(key:string, value:any)=>void):void;
     toObject():EntityData;
+    merge(e:EntityData):void;
 }

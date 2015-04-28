@@ -1,6 +1,6 @@
-/// <reference path="../id-provider.ts" />
+/// <reference path="../../id-provider.ts" />
 ///<reference path="entity.ts"/>
-///<reference path="..\id-set.ts"/>
+///<reference path="..\..\id-set.ts"/>
 
 //import Set=require('../id-set-impl');
 
@@ -34,7 +34,7 @@ class EntityImpl implements Entity {
     }
 
     public getLink(name):Entity {
-        return this.entities.get({id:this.links[name]});
+        return this.entities.get({id: this.links[name]});
     }
 
     public forEach(callback:(key:string, value:any)=>void):void {
@@ -44,6 +44,11 @@ class EntityImpl implements Entity {
                 callback(i, attrs[i]);
             }
         }
+    }
+
+    public merge(e:EntityData) {
+        this.attrs = e.attrs; //todo diff
+        this.links = e.links;
     }
 
     public toObject():EntityData {

@@ -56,7 +56,7 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
                     eventType: 'JOIN',
                     gameId: userGame.idForUser,
                     info: userGame.getInfo(),
-                    replicator: userGame.getState().getReplicator().typeId
+                    replicator: userGame.getReplicator().typeId
                 };
                 out.write({
                     reliable: true,

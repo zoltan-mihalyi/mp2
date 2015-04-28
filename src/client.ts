@@ -36,7 +36,20 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
                     case 'JOIN':
                         var joinEvent:JoinEvent = <JoinEvent>data;
                         var replicator:ReplicatorClient<any> = getReplicator(joinEvent.replicator);
-                        userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, out);
+                        userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, function(params, callbacks){
+                            var commandEvent:CommandEvent = { //todo ne ide
+                                eventType: 'COMMAND',
+                                gameId: this.id,
+                                params: params,
+                                callbacks: callbacks
+                            };
+
+                            out.write({
+                                reliable: true,
+                                keepOrder: true,
+                                data: commandEvent
+                            });
+                        });
                         userGame.setReplicator(replicator);
                         client.games[joinEvent.gameId] = userGame;
                         listener.onJoin(userGame);
@@ -55,7 +68,31 @@ class Client implements ConnectionAccepter<UserEvent,GameEvent> {
                     case 'REPLICATION':
                         var replicationEvent:ReplicationEvent = <ReplicationEvent>data;
                         userGame = client.games[replicationEvent.gameId];
-                        userGame.getReplicator().onUpdate(replicationEvent.replicationData);
+                        var state = userGame.getState();
+                        var batch = state.createBatch();
+                        userGame.getReplicator().onUpdate(replicationEvent.replicationData, { //todo indention
+                            forEach: (c)=> {
+                                state.forEach(c);
+                            },
+                            merge: (item:IDProvider)=> {
+                                var existing = state.get(item.id);
+                                if (existing) {
+                                    batch.update(item,userGame.getSimulatedData(existing));
+                                } else {
+                                    batch.create(item);
+                                }
+                            },
+                            remove: (id:number)=> {
+                                batch.remove(id);
+                            },
+                            contains: (id:number)=> {
+                                return typeof state.get(id)!=='undefined';
+                            },
+                            create: (item:IDProvider)=> {
+                                batch.create(item);
+                            }
+                        });
+                        batch.apply();
                         listener.onReplication(userGame, replicationEvent.replicationData);
                         break;
                     default:
@@ -75,7 +112,7 @@ function getReplicator(id:number):ReplicatorClient<any> {
         case 0:
             return new BruteForceReplicatorClient();
         case 1:
-            return new DiffReplicatorClient();
+        //return new DiffReplicatorClient();
     }
 }
 

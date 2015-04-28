@@ -1,9 +1,9 @@
-///<reference path="../game/server-state.ts"/>
-///<reference path="..\game\client-state.ts"/>
-class ClientStateContainer {
+///<reference path="..\state\client-state.ts"/>
+///<reference path="..\id-provider.ts"/>
+class ClientStateContainer<T extends IDProvider> {
     protected state:ClientState;
 
-    setState(state:ClientState):void {
+    constructor(state:ClientState) {
         this.state = state;
     }
 }

@@ -9,8 +9,12 @@ declare module "node-static" {
     export = noTypeInfoYet;
 }
 
-
 declare module "http" {
     var noTypeInfoYet: any;
+    export = noTypeInfoYet;
+}
+
+declare module "grape-engine" {
+    var noTypeInfoYet: any; // any var name here really
     export = noTypeInfoYet;
 }

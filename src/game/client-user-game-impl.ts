@@ -4,40 +4,29 @@
 ///<reference path="..\messaging\command-event.ts"/>
 ///<reference path="..\predicted-command.ts"/>
 ///<reference path="..\id-map.ts"/>
-import StateImpl = require('../game/state-impl');
 import IdSetImpl = require('../id-set-impl');
 import IdMapImpl = require('../id-map-impl');
-import EntityImpl = require('../game/entity-impl');
+import ArrayMap = require('../array-map');
 
-interface BooleanMap {
-    [index:string]:boolean;
-}
-
-interface PredictionInfo {
-    attrs:BooleanMap;
-    correction:(entity:Entity, key:string, value:any)=>void;
-}
-
-class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientState {
-    private entities:IdSet<Entity> = new IdSetImpl<Entity>();
+class ClientUserGameImpl implements ClientUserGame {
     private info:any;
+    private state:ClientState;
     private replicator:ReplicatorClient<any>;
-    private out:Writeable<Message<CommandEvent>>;
+    private onCommand:Function;
     private id:number;
     private callbacks:{[index:number]:Function} = {};
     private nextCallbackId = 0;
-    private predictedCommands:{[index:string]:PredictedCommand} = {};
-    private predictedEntities:IdMap<EntityData,PredictionInfo> = new IdMapImpl<EntityData,PredictionInfo>();
+    private predictedCommands:{[index:string]:Function} = {};
+    private simulatedEntities:ArrayMap<any,any> = new ArrayMap<any,any>();
 
-    constructor(id:number, info:any, out:Writeable<Message<CommandEvent>>) {
-        super();
+    constructor(id:number, info:any, onCommand:Function) {
         this.id = id;
         this.info = info;
-        this.out = out;
+        this.onCommand = onCommand;
     }
 
     public getState():ClientState {
-        return this;
+        return this.state;
     }
 
     public getInfo() {
@@ -54,21 +43,10 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
             }
         }
 
-        var commandEvent:CommandEvent = {
-            eventType: 'COMMAND',
-            gameId: this.id,
-            params: params,
-            callbacks: callbacks
-        };
-
-        this.out.write({
-            reliable: true,
-            keepOrder: true,
-            data: commandEvent
-        });
+        this.onCommand(params, callbacks);
         var predictedCommand = this.predictedCommands[params[0]];
         if (predictedCommand) {
-            predictedCommand.simulate.apply(null, params.slice(1));
+            predictedCommand.apply(null, params.slice(1));
         }
     }
 
@@ -78,19 +56,16 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
         return id;
     }
 
-    public setPredicted(predictedCommand:PredictedCommand) {
-        this.predictedCommands[predictedCommand.command] = predictedCommand;
-        for (var i = 0; i < predictedCommand.entities.length; i++) {
-            var entityInfo = predictedCommand.entities[i];
-            var attrsMap:BooleanMap = {};
-            for (var j = 0; j < entityInfo.attrs.length; j++) {
-                attrsMap[entityInfo.attrs[j]] = true;
-            }
-            this.predictedEntities.put(entityInfo.entity.toObject(), {
-                attrs: attrsMap,
-                correction: predictedCommand.correction
-            });
-        }
+    public setPredicted(command:string, handler:Function):void {
+        this.predictedCommands[command] = handler;
+    }
+
+    public setSimulated(entity:any, simulationData:any):void {
+        this.simulatedEntities.put(entity, simulationData);
+    }
+
+    public getSimulatedData(entity:any):any {
+        return this.simulatedEntities.get(entity);
     }
 
     public getReplicator():ReplicatorClient<any> {
@@ -99,78 +74,14 @@ class ClientUserGameImpl extends StateImpl implements ClientUserGame, ClientStat
 
     public setReplicator(replicator:ReplicatorClient<any>):void {
         this.replicator = replicator;
-        replicator.setState(this);
     }
 
-    contains(data:EntityData):boolean {
-        return this.entities.contains(data);
-    }
-
-    createBatch():ClientStateBatch {
-        var toRemove:Entity[]=[];
-        var toMerge:EntityData[]=[];
-        var mergeResult:Entity[]=[];
-        return {
-            merge:(e:EntityData)=>{
-                toMerge.push(e);
-            },
-            remove:(e:Entity):void=>{
-                toRemove.push(e);
-            },
-            apply:()=>{
-                for(var i=0;i<toRemove.length;i++){
-                    this.entities.remove(toRemove[i]);
-                }
-                for(var i=0;i<toRemove.length;i++){
-                    this.onRemove(toRemove[i]);
-                }
-                for(var i=0;i<toMerge.length;i++){
-                    mergeResult.push(this.merge(toMerge[i]));
-                }
-                for(var i=0;i<mergeResult.length;i++){
-                    if(mergeResult[i]!==null){
-                        this.onAdd(mergeResult[i]);
-                    }
-                }
-            }
-        };
-    }
-
-    private merge(data:EntityData):Entity {
-        if (this.contains(data)) {
-            var predicted = this.predictedEntities.contains(data);
-            if (predicted) {
-                var predictionInfo = this.predictedEntities.get(data);
-            }
-            var entity = this.entities.get(data);
-            for (var i in data.attrs) {
-                if (data.attrs.hasOwnProperty(i)) {
-                    if (predicted && predictionInfo.attrs[i]) {
-                        predictionInfo.correction(entity, i, data.attrs[i]);
-                    } else {
-                        entity.set(i, data.attrs[i]);
-                    }
-                }
-            }
-            for (var i in data.links) {
-                if (data.links.hasOwnProperty(i)) {
-                    entity.attachId(i, data.links[i]);
-                }
-            }
-            return null;
-        } else {
-            var newEntity = new EntityImpl(data, this.entities);
-            this.entities.put(newEntity);
-            return newEntity
-        }
-    }
-
-    forEach(callback:(e:Entity)=>void):void {
-        this.entities.forEach(callback);
-    }
-
-    runCallback(id:number, params:any[]):void {
+    public runCallback(id:number, params:any[]):void {
         this.callbacks[id].apply(null, params)
+    }
+
+    public setState(state:ClientState):void {
+        this.state = state;
     }
 }
 

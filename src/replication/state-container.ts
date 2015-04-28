@@ -1,8 +1,8 @@
-///<reference path="../game/server-state.ts"/>
+///<reference path="..\state\server-state.ts"/>
 class StateContainer {
-    protected state:ReadableServerGameState;
+    protected state:ServerState;
 
-    setState(state:ReadableServerGameState):void {
+    constructor(state:ServerState) {
         this.state = state;
     }
 }

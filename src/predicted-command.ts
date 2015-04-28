@@ -1,7 +1,7 @@
-///<reference path="game\entity.ts"/>
-interface PredictedCommand {
+///<reference path="id-provider.ts"/>
+interface xPredictedCommand{
     command:string;
-    entities:{entity:Entity;attrs:string[]}[];
+    affected:any[];
+    onUpdate(newInstance); //TODO type?
     simulate:Function;
-    correction:(entity:Entity, key:string, value:any)=>void;
 }

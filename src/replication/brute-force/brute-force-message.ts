@@ -1,5 +1,3 @@
-///<reference path="..\..\game\entity.ts"/>
-
-interface BruteForceMessage{
-    [index:number]:EntityData;
+///<reference path="..\..\id-provider.ts"/>
+interface BruteForceMessage extends Array<IDProvider>{
 }

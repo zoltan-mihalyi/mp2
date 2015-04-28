@@ -12,12 +12,24 @@ class IdSetImpl<T extends IDProvider> implements IdSet<T> {
         return this.map[element.id];
     }
 
+    public getIndex(index:number):T {
+        return this.map[index];
+    }
+
     public remove(element:T) {
         delete this.map[element.id];
     }
 
-    public contains(element:T) {
+    public removeIndex(index:number):void {
+        delete this.map[index];
+    }
+
+    public contains(element:T):boolean {
         return this.map.hasOwnProperty(element.id + '');
+    }
+
+    public containsIndex(index:number):boolean {
+        return this.map.hasOwnProperty(index + '');
     }
 
     public forEach(callback:(value?:T, key?:string)=>void) {

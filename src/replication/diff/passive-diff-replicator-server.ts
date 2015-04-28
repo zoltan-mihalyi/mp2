@@ -1,5 +1,4 @@
 ///<reference path="../replicator-client.ts"/>
-///<reference path="../../game/server-state.ts"/>
 ///<reference path="..\replicator-server.ts"/>
 ///<reference path="diff.ts"/>
 
@@ -8,14 +7,14 @@ import StateContainer=require('../state-container');
 class PassiveDiffReplicatorServer extends StateContainer implements ReplicatorServer<Diff> {
     typeId:number = 1;
 
-    private created:Entity[] = [];
-    private modified:Entity[] = [];
+    private created:IDProvider[] = [];
+    private modified:IDProvider[] = [];
     private removed:number[] = [];
 
-    public setState(state:ServerGameState) {
-        super.setState(state);
-        state.onAdd = this.onAdd;
-        state.onRemove = this.onRemove;
+    public setState(state:ServerState) {
+        //super.setState(state);
+        //state.onAdd = this.onAdd;
+        //state.onRemove = this.onRemove;
         //state.onModify=this.onModify; TODO
     }
 

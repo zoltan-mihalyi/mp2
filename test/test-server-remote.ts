@@ -10,10 +10,16 @@ var transformer:ConnectionAccepter<any, any> = new JSONTransformer(server);
 
 transformer = new DelayTransformer(transformer, 1, 500);
 
-var fileServer = new nodeStatic.Server('../');
+var fileServer = new nodeStatic.Server('../',{
+    cache:1
+});
 var httpServer = http.createServer(function (request, response) {
     request.addListener('end', function () {
-        fileServer.serve(request, response);
+        //if(request.url==='/target/browser/test/grape-engine.js'){
+        //    fileServer.serveFile('test/grape.js', 200, {}, request, response);
+        //}else {
+            fileServer.serve(request, response);
+        //}
     }).resume();
 }).listen(8080);
 
