@@ -1,5 +1,4 @@
 ///<reference path="connection-accepter.ts"/>
-///<reference path="game/user-game.ts"/>
 ///<reference path="messaging\command-event.ts"/>
 ///<reference path="messaging\game-event.ts"/>
 ///<reference path="messaging\callback-event.ts"/>
@@ -25,7 +24,7 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
         var server = this;
         var result = {
             write: function (event:CommandEvent) { //TODO check client data
-                var userGame = user.getUserGame(event.gameId);
+                var userGame:ServerUserGame = user.getUserGame(event.gameId);
                 var params = [];
                 for (var i = 0; i < event.params.length; i++) {
                     params[i] = event.params[i];
@@ -41,7 +40,9 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
                         }
                     })(params[callbackIndex]);
                 }
-                userGame.execute.apply(userGame, [event.command].concat(params));
+                var clientGame = userGame.getClientGame();
+                clientGame.execute.apply(clientGame,[event.command].concat(params));
+                //userGame.execute.apply(userGame, [event.command].concat(params));
             },
             close: function () {
                 if (server.connectionListener.onDisconnect) {

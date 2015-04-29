@@ -16,7 +16,6 @@ class ServerUserGameImpl implements ServerUserGame {
     public onLeave = function () {
     };
     public id;
-    public idForUser:number;
     private state:RealServerState;
     private relevanceSet:RelevanceSet;
     private relevanceSetReplicator:ReplicatorServer<any>;
@@ -28,33 +27,17 @@ class ServerUserGameImpl implements ServerUserGame {
         this.game = game;
         this.user = user;
         this.id = game.nextUserGameId();
-        this.idForUser = user.addUserGame(this);
+        var clientGameId:number = user.addUserGame(this);
         this.state = game.getState();
-        this.clientGame = new ClientGameImpl(this.idForUser, this.game.getInfo(), {
+        this.clientGame = new ClientGameImpl(clientGameId, this.game.getInfo(), {
             onCommand: (command:string, params:any[])=> {
-                this.execute.apply(this, [command].concat(params));
+                this.commands[command].apply(this, params);
             }
         });
     }
 
-    execute(command:string, ...params:any[]) {
-        this.commands[command].apply(this, params); //todo try
-    }
-
     getRealState():RealServerState {
         return this.state;
-    }
-
-    setState(state:ClientState) {
-        this.clientState = state;
-    }
-
-    getState():ClientState {
-        return this.clientState;
-    }
-
-    public getInfo() {
-        return this.game.getInfo();
     }
 
     leave():void {
@@ -76,10 +59,6 @@ class ServerUserGameImpl implements ServerUserGame {
 
     public getRelevanceSet():RelevanceSet {
         return this.relevanceSet;
-    }
-
-    setPredicted():void {
-        //skip
     }
 
     getReplicator():ReplicatorServer<any> {

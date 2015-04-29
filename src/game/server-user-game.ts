@@ -1,10 +1,8 @@
-///<reference path="user-game.ts"/>
 ///<reference path="..\user.ts"/>
 ///<reference path="..\replication\replicator-server.ts"/>
 ///<reference path="..\relevance\relevance-set.ts"/>
 ///<reference path="..\state\real-server-state.ts"/>
-interface ServerUserGame extends UserGame, IDProvider{
-    idForUser:number;
+interface ServerUserGame extends IDProvider{
     leave():void;
     user:User;
     onLeave:Function;

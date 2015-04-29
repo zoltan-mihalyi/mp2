@@ -1,4 +1,3 @@
-///<reference path="user-game.ts"/>
 ///<reference path="client-game.ts"/>
 ///<reference path="server-user-game.ts"/>
 interface GameListenerGeneric<T> {

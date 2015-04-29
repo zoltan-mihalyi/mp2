@@ -1,4 +1,3 @@
-///<reference path="..\src\game\user-game.ts"/>
 ///<reference path="../typing/all.d.ts"/>
 ///<reference path="..\src\game\game-listener.ts"/>
 ///<reference path="..\src\game\client-game.ts"/>
