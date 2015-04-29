@@ -1,5 +1,4 @@
 ///<reference path="connection-accepter.ts"/>
-///<reference path="messaging\user-event.ts"/>
 
 class WebsocketClient {
     constructor(accepter:ConnectionAccepter<string,string>, url:string) {

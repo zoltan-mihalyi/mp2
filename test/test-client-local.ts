@@ -1,5 +1,5 @@
 import server=require('./test-server');
 
-import clientEvents=require('./test-client');
+import client=require('./test-client');
 
-server.createUser(clientEvents);
+server.createUser(client);

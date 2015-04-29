@@ -1,5 +1,4 @@
 ///<reference path="connection-accepter.ts"/>
-///<reference path="messaging\user-event.ts"/>
 ///<reference path="messaging\join-event.ts"/>
 ///<reference path="messaging\command-event.ts"/>
 ///<reference path="replication\replicator-client.ts"/>
@@ -7,112 +6,157 @@
 ///<reference path="messaging\callback-event.ts"/>
 ///<reference path="messaging\replication-event.ts"/>
 ///<reference path="game\game-listener.ts"/>
-import ClientUserGameImpl = require('./game/client-user-game-impl');
-import BruteForceReplicatorClient = require('./replication/brute-force/brute-force-replicator-client');
 import DiffReplicatorClient = require('./replication/diff/diff-replicator-client');
 import GameListenerImpl = require('./game/game-listener-impl');
+import IdSetImpl=require('./id-set-impl');
+import IdMapImpl=require('./id-map-impl');
+import ClientGameImpl=require('./game/client-game-impl');
 
-class Client implements ConnectionAccepter<UserEvent,GameEvent> {
+interface CallbackContainer {
+    nextId:number;
+    callbacks:{[index:number]:Function};
+}
+
+class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener {
     private out:Writeable<Message<GameEvent>>;
     private listener:GameListener;
-    private games:{[index:number]:ClientUserGame} = {};
+    private games:IdSet<ClientGameImpl> = new IdSetImpl<ClientGameImpl>();
+    private callbacks:IdMap<ClientGame,CallbackContainer> = new IdMapImpl<ClientGame,CallbackContainer>();
 
     constructor(listener:GameListener) {
         this.listener = new GameListenerImpl(listener);
     }
 
-    public accept(out:Writeable<Message<CommandEvent>>):Writeable<UserEvent> {
-        var client = this;
-        var listener = this.listener;
+    public accept(out:Writeable<Message<CommandEvent>>):Writeable<GameEvent> {
         if (this.out) {
             throw new Error('Client cannot accept more than one connection');
         }
         this.out = out;
         return {
-            write: function (data:UserEvent) {
-                var userGame:ClientUserGame;
-                console.log(data.eventType);
-                switch (data.eventType) {
+            write: (event:GameEvent) => {
+                var clientGame:ClientGameImpl;
+                switch (event.eventType) {
                     case 'JOIN':
-                        var joinEvent:JoinEvent = <JoinEvent>data;
-                        var replicator:ReplicatorClient<any> = getReplicator(joinEvent.replicator);
-                        userGame = new ClientUserGameImpl(joinEvent.gameId, joinEvent.info, function(params, callbacks){
-                            var commandEvent:CommandEvent = { //todo ne ide
-                                eventType: 'COMMAND',
-                                gameId: this.id,
-                                params: params,
-                                callbacks: callbacks
-                            };
-
-                            out.write({
-                                reliable: true,
-                                keepOrder: true,
-                                data: commandEvent
-                            });
-                        });
-                        userGame.setReplicator(replicator);
-                        client.games[joinEvent.gameId] = userGame;
-                        listener.onJoin(userGame);
-                        break;
-                    case 'LEAVE':
-                        var leaveEvent:GameEvent = <GameEvent>data;
-                        //TODO cleanup
-                        listener.onLeave(client.games[leaveEvent.gameId]);
-                        break;
-                    case 'CALLBACK':
-                        var callbackEvent:CallbackEvent = <CallbackEvent>data;
-                        userGame = client.games[callbackEvent.gameId];
-                        userGame.runCallback(callbackEvent.callbackId, callbackEvent.params);
-                        listener.onCallback(userGame, callbackEvent.callbackId, callbackEvent.params);
-                        break;
-                    case 'REPLICATION':
-                        var replicationEvent:ReplicationEvent = <ReplicationEvent>data;
-                        userGame = client.games[replicationEvent.gameId];
-                        var state = userGame.getState();
-                        var batch = state.createBatch();
-                        userGame.getReplicator().onUpdate(replicationEvent.replicationData, { //todo indention
-                            forEach: (c)=> {
-                                state.forEach(c);
-                            },
-                            merge: (item:IDProvider)=> {
-                                var existing = state.get(item.id);
-                                if (existing) {
-                                    batch.update(item,userGame.getSimulatedData(existing));
-                                } else {
-                                    batch.create(item);
+                        var joinEvent = <JoinEvent>event;
+                        clientGame = new ClientGameImpl(joinEvent.gameId, joinEvent.info, {
+                            onCommand: (command:string, params:any[])=> {
+                                var callbacks:number[] = [];
+                                for (var i = 0; i < params.length; i++) {
+                                    var param = params[i];
+                                    if (typeof  param === 'function') {
+                                        params[i] = this.addCallback(clientGame, param);
+                                        callbacks.push(i);
+                                    }
                                 }
-                            },
-                            remove: (id:number)=> {
-                                batch.remove(id);
-                            },
-                            contains: (id:number)=> {
-                                return typeof state.get(id)!=='undefined';
-                            },
-                            create: (item:IDProvider)=> {
-                                batch.create(item);
+
+                                var commandEvent:CommandEvent = {
+                                    eventType: 'COMMAND',
+                                    gameId: joinEvent.gameId,
+                                    command: command,
+                                    params: params,
+                                    callbacks: callbacks
+                                };
+
+                                out.write({
+                                    reliable: true,
+                                    keepOrder: true,
+                                    data: commandEvent
+                                });
                             }
                         });
-                        batch.apply();
-                        listener.onReplication(userGame, replicationEvent.replicationData);
+                        this.games.put(clientGame);
+                        this.onJoin(clientGame);
                         break;
-                    default:
-                        console.log('Unknown event: ' + data.eventType);
+                    case 'LEAVE':
+                        this.onLeave(this.getGame(<GameEvent>event));
+                        break;
+                    case 'CALLBACK':
+                        var callbackEvent:CallbackEvent = <CallbackEvent>event;
+                        clientGame = this.getGame(callbackEvent);
+                        this.onCallback({
+                            id: callbackEvent.callbackId,
+                            clientGame: clientGame
+                        }, callbackEvent.params);
+                        break;
+                    case 'REPLICATION':
+                        var message:Message<any> = {
+                            reliable: true,
+                            keepOrder: true,
+                            data: (<ReplicationEvent>event).replicationData
+                        };
+                        this.onReplication(this.getGame(event), message);
+                        break;
                 }
             },
 
-            close: function () {
-                client.out = null; //TODO more cleanup
+            close: ()=> {
+                this.out = null; //TODO more cleanup
             }
         };
     }
-}
 
-function getReplicator(id:number):ReplicatorClient<any> {
-    switch (id) {
-        case 0:
-            return new BruteForceReplicatorClient();
-        case 1:
-        //return new DiffReplicatorClient();
+    private getGame(event:GameEvent):ClientGameImpl {
+        return this.games.getIndex(event.gameId);
+    }
+
+    private addCallback(clientGame:ClientGame, callback:Function):number {
+        var callbackContainer:CallbackContainer;
+        if (!this.callbacks.contains(clientGame)) {
+            callbackContainer = {
+                nextId: 0,
+                callbacks: {}
+            };
+            this.callbacks.put(clientGame, callbackContainer);
+        } else {
+            callbackContainer = this.callbacks.get(clientGame);
+        }
+        callbackContainer.callbacks[++callbackContainer.nextId] = callback;
+        return callbackContainer.nextId;
+    }
+
+    onJoin(userGame:ClientGame) {
+        this.listener.onJoin(userGame);
+    }
+
+    onLeave(clientGame:ClientGame) {
+        this.listener.onLeave(clientGame);
+        delete this.games[clientGame.id];
+    }
+
+    onCallback(callback:Callback, params:any[]) {
+        var callbackFn = this.callbacks.get(callback.clientGame).callbacks[callback.id];
+        callbackFn.apply(null, params);
+        this.listener.onCallback(callback, params);
+    }
+
+    onReplication(clientGame:ClientGame, message:Message<any>) {
+        var replicationData = message.data;
+        var state = clientGame.getState();
+        var batch = state.createBatch();
+        clientGame.getReplicator().onUpdate(replicationData, { //todo indention
+            forEach: (c)=> {
+                state.forEach(c);
+            },
+            merge: (item:IDProvider)=> {
+                var existing = state.get(item.id);
+                if (existing) {
+                    batch.update(item, clientGame.getSimulatedData(existing));
+                } else {
+                    batch.create(item);
+                }
+            },
+            remove: (id:number)=> {
+                batch.remove(id);
+            },
+            contains: (id:number)=> {
+                return typeof state.get(id) !== 'undefined';
+            },
+            create: (item:IDProvider)=> {
+                batch.create(item);
+            }
+        });
+        batch.apply();
+        this.listener.onReplication(clientGame, replicationData);
     }
 }
 

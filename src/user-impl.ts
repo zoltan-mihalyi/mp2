@@ -1,17 +1,16 @@
 ///<reference path="user.ts"/>
 ///<reference path="messaging\writeable.ts"/>
-///<reference path="messaging/user-event.ts"/>
 ///<reference path="game\server-user-game.ts"/>
 ///<reference path="messaging\join-event.ts"/>
 ///<reference path="messaging\replication-event.ts"/>
 
 import GameListenerImpl=require('./game/game-listener-impl');
 
-class UserImpl extends GameListenerImpl implements User {
+class UserImpl extends GameListenerImpl<ClientGame> implements User {
     private nextId = 0;
     private userGames:{[index:number]:ServerUserGame} = {};
 
-    public getUserGame(id:number):UserGame {
+    public getUserGame(id:number):ServerUserGame {
         return this.userGames[id];
     }
 

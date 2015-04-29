@@ -8,6 +8,7 @@
 ///<reference path="..\state\client-state.ts"/>
 import BruteForceReplicatorServer= require('../replication/brute-force/brute-force-replicator-server');
 import Game=require('./game');
+import ClientGameImpl=require('./client-game-impl');
 
 class ServerUserGameImpl implements ServerUserGame {
     public game:Game;
@@ -21,6 +22,7 @@ class ServerUserGameImpl implements ServerUserGame {
     private relevanceSetReplicator:ReplicatorServer<any>;
     private clientState:ClientState;
     private commands:{[index:string]:Function} = {}; //todo
+    private clientGame:ClientGame;
 
     constructor(game:Game, user:User) {
         this.game = game;
@@ -28,9 +30,14 @@ class ServerUserGameImpl implements ServerUserGame {
         this.id = game.nextUserGameId();
         this.idForUser = user.addUserGame(this);
         this.state = game.getState();
+        this.clientGame = new ClientGameImpl(this.idForUser, this.game.getInfo(), {
+            onCommand: (command:string, params:any[])=> {
+                this.execute.apply(this, [command].concat(params));
+            }
+        });
     }
 
-    execute(command:string, ...params) {
+    execute(command:string, ...params:any[]) {
         this.commands[command].apply(this, params); //todo try
     }
 
@@ -40,19 +47,10 @@ class ServerUserGameImpl implements ServerUserGame {
 
     setState(state:ClientState) {
         this.clientState = state;
-        this.user.onReplication = function (userGame:UserGame, replicationData:any) {
-
-        }
     }
 
     getState():ClientState {
         return this.clientState;
-    }
-
-    public onReplication(data:any):void {
-        //if (this.clientState) {
-        //    this.clientState.cre
-        //}
     }
 
     public getInfo() {
@@ -60,7 +58,8 @@ class ServerUserGameImpl implements ServerUserGame {
     }
 
     leave():void {
-        this.user.onLeave(this);
+        var clientGame = this.getClientGame();
+        this.user.onLeave(clientGame);
         this.game.onLeave(this);
         this.onLeave();
     }
@@ -89,6 +88,10 @@ class ServerUserGameImpl implements ServerUserGame {
         } else {
             return this.game.getReplicator();
         }
+    }
+
+    public getClientGame():ClientGame {
+        return this.clientGame;
     }
 }
 

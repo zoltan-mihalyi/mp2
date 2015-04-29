@@ -39,8 +39,8 @@ class RelevanceSetVg implements RelevanceSet {
         return this.elements.contains(e);
     }
 
-    public createVisibilityGroup<V extends IDProvider>():VisibilityGroup<V> {
-        var vg = new VisibilityGroupImpl<V>(this);
+    public createVisibilityGroup<T>():VisibilityGroup<T> {
+        var vg = new VisibilityGroupImpl<T>(this);
         this.visibilityGroups.push(vg);
         return vg;
     }

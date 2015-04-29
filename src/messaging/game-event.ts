@@ -1,4 +1,4 @@
-///<reference path="user-event.ts"/>
-interface GameEvent extends UserEvent{
+interface GameEvent {
+    eventType:string; //TODO enum
     gameId:number;
 }

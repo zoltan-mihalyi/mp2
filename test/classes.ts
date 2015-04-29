@@ -6,7 +6,7 @@ import classRegistry = require('./grape/class-registry');
 var CELL_SIZE = 16;
 
 
-export interface Position extends IDProvider {
+export interface Position {
     x:number;
     y:number;
 }

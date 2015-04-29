@@ -1,5 +1,4 @@
 ///<reference path="writeable.ts"/>
-///<reference path="user-event.ts"/>
 ///<reference path="..\connection-accepter.ts"/>
 
 interface AsyncConvert<F,T> {

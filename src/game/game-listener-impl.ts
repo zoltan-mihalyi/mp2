@@ -1,25 +1,31 @@
 ///<reference path="game-listener.ts"/>
-class GameListenerImpl implements GameListener {
-    constructor(listener:GameListener) {
+function bind(fn:Function, context:any):Function {
+    return function () {
+        fn.apply(context, arguments);
+    };
+}
+
+class GameListenerImpl<T> implements GameListenerGeneric<T> {
+    constructor(listener:GameListenerGeneric<T>) {
         var events = ['onJoin', 'onLeave', 'onReplication', 'onCallback'];
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
             if (listener[event]) {
-                this[event] = listener[event];
+                this[event] = bind(listener[event], listener);
             }
         }
     }
 
-    onJoin(userGame:UserGame):void {
+    onJoin(t:T):void {
     }
 
-    onLeave(userGame:UserGame):void {
+    onLeave(t:T):void {
     }
 
-    onReplication(userGame:UserGame, replicationData:any):void {
+    onReplication(t:T, replicationData:Message<any>):void {
     }
 
-    onCallback(userGame:UserGame):void {
+    onCallback(callback:Callback, params:any[]):void {
     }
 }
 

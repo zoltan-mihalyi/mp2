@@ -11,7 +11,7 @@ interface ConnectionListener {
     onDisconnect?(user:User):void;
 }
 
-class Server implements ConnectionAccepter<GameEvent,UserEvent> {
+class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
     public connectionListener:ConnectionListener;
 
     constructor(endpointListener?:ConnectionListener) {
@@ -21,7 +21,7 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
             };
     }
 
-    public accept(out:Writeable<Message<UserEvent>>):Writeable<CommandEvent> {
+    public accept(out:Writeable<Message<GameEvent>>):Writeable<CommandEvent> {
         var server = this;
         var result = {
             write: function (event:CommandEvent) { //TODO check client data
@@ -34,11 +34,14 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
                     var callbackIndex = event.callbacks[i];
                     params[callbackIndex] = (function (callbackId) { //todo reduce indention
                         return function () {
-                            user.onCallback(userGame, callbackId, Array.prototype.splice.call(arguments, 0));
+                            user.onCallback({
+                                id: callbackId,
+                                clientGame: userGame.getClientGame()
+                            }, Array.prototype.splice.call(arguments, 0));
                         }
                     })(params[callbackIndex]);
                 }
-                userGame.execute.apply(userGame, params);
+                userGame.execute.apply(userGame, [event.command].concat(params));
             },
             close: function () {
                 if (server.connectionListener.onDisconnect) {
@@ -51,12 +54,11 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
         };
 
         var user = this.createUser({ //todo redundancy
-            onJoin(userGame:ServerUserGame):void {
+            onJoin(clientGame:ClientGame):void {
                 var joinEvent:JoinEvent = {
                     eventType: 'JOIN',
-                    gameId: userGame.idForUser,
-                    info: userGame.getInfo(),
-                    replicator: userGame.getReplicator().typeId
+                    gameId: clientGame.id,
+                    info: clientGame.getInfo()
                 };
                 out.write({
                     reliable: true,
@@ -64,10 +66,10 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
                     data: joinEvent
                 });
             },
-            onLeave(userGame:ServerUserGame) {
+            onLeave(clientGame:ClientGame) {
                 var leaveEvent:GameEvent = {
                     eventType: 'LEAVE',
-                    gameId: userGame.idForUser
+                    gameId: clientGame.id
                 };
                 out.write({
                     reliable: true,
@@ -75,10 +77,10 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
                     data: leaveEvent
                 });
             },
-            onReplication(userGame:ServerUserGame, message:Message<any>):void {
+            onReplication(clientGame:ClientGame, message:Message<any>):void {
                 var replicationEvent:ReplicationEvent = {
                     eventType: 'REPLICATION',
-                    gameId: userGame.idForUser,
+                    gameId: clientGame.id,
                     replicationData: message.data
                 };
                 out.write({
@@ -87,11 +89,11 @@ class Server implements ConnectionAccepter<GameEvent,UserEvent> {
                     data: replicationEvent
                 });
             },
-            onCallback(userGame:ServerUserGame, callbackId:number, params:any[]):void {
+            onCallback(callback:Callback, params:any[]):void {
                 var callbackEvent:CallbackEvent = {
                     eventType: 'CALLBACK',
-                    gameId: userGame.idForUser,
-                    callbackId: callbackId,
+                    gameId: callback.clientGame.id,
+                    callbackId: callback.id,
                     params: params
                 };
                 out.write({

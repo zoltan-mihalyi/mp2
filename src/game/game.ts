@@ -18,14 +18,14 @@ interface RemoveListener {
     entityRemoved(e:any);
 }
 
-class Game extends GameListenerImpl implements RemoveListener {
+class Game extends GameListenerImpl<ServerUserGame> implements RemoveListener {
     private info:any;
     private state:RealServerState;
     private replicator:ReplicatorServer<any>;
     private userGames:IdSetImpl<ServerUserGame> = new IdSetImpl<ServerUserGame>();
     private _nextUserGameId:number = 0;
 
-    constructor(info:any, gameListener:GameListener, state?:RealServerState) {
+    constructor(info:any, gameListener:ServerGameListener, state?:RealServerState) {
         super(gameListener);
         this.info = info;
         this.state = state;
@@ -55,8 +55,9 @@ class Game extends GameListenerImpl implements RemoveListener {
     public addUser(user:User):ServerUserGame {
         var userGame = new ServerUserGameImpl(this, user);
         this.userGames.put(userGame);
+        var clientGame = userGame.getClientGame();
         this.onJoin(userGame);
-        user.onJoin(userGame);
+        user.onJoin(clientGame);
         return userGame;
     }
 
@@ -77,8 +78,8 @@ class Game extends GameListenerImpl implements RemoveListener {
 
             for (var i = 0; i < messages.length; i++) {
                 var message = messages[i];
-                //userGame.onReplication(message.data);
-                userGame.user.onReplication(userGame, message);
+                var clientGame = userGame.getClientGame();
+                userGame.user.onReplication(clientGame, message);
                 this.onReplication(userGame, message);
             }
         });

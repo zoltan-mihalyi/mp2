@@ -3,7 +3,7 @@
 ///<reference path="..\replication\replicator-server.ts"/>
 ///<reference path="..\relevance\relevance-set.ts"/>
 ///<reference path="..\state\real-server-state.ts"/>
-interface ServerUserGame extends UserGame, IDProvider {
+interface ServerUserGame extends UserGame, IDProvider{
     idForUser:number;
     leave():void;
     user:User;
@@ -13,4 +13,5 @@ interface ServerUserGame extends UserGame, IDProvider {
     getRelevanceSet():RelevanceSet;
     getReplicator():ReplicatorServer<any>;
     getRealState():RealServerState;
+    getClientGame():ClientGame;
 }
