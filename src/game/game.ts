@@ -13,12 +13,7 @@ import GameListenerImpl=require('./game-listener-impl');
 import BruteForceReplicatorServer= require('../replication/brute-force/brute-force-replicator-server');
 import ArrayMap = require('../array-map');
 
-
-interface RemoveListener {
-    entityRemoved(e:any);
-}
-
-class Game extends GameListenerImpl<ServerUserGame> implements RemoveListener {
+class Game extends GameListenerImpl<ServerUserGame> {
     private info:any;
     private state:RealServerState;
     private replicator:ReplicatorServer<any>;
@@ -29,6 +24,16 @@ class Game extends GameListenerImpl<ServerUserGame> implements RemoveListener {
         super(gameListener);
         this.info = info;
         this.state = state;
+        if (state) {
+            state.onRemove = (e:any)=> {
+                this.userGames.forEach(function (ug:ServerUserGame) { //todo improve
+                    var rel = ug.getRelevanceSet();
+                    if (rel) {
+                        rel.remove(e);
+                    }
+                });
+            }
+        }
         this.setReplicator(BruteForceReplicatorServer);
     }
 
@@ -79,17 +84,8 @@ class Game extends GameListenerImpl<ServerUserGame> implements RemoveListener {
             for (var i = 0; i < messages.length; i++) {
                 var message = messages[i];
                 var clientGame = userGame.getClientGame();
-                userGame.user.onReplication(clientGame, message);
-                this.onReplication(userGame, message);
-            }
-        });
-    }
-
-    public entityRemoved(e:any):void {
-        this.userGames.forEach(function (ug:ServerUserGame) { //todo improve
-            var rel = ug.getRelevanceSet();
-            if (rel) {
-                rel.remove(e);
+                userGame.user.onReplication(clientGame, userGame.lastCommandIndex, message);
+                this.onReplication(userGame, userGame.lastCommandIndex, message);
             }
         });
     }

@@ -32,7 +32,7 @@ var login = new Game('login', {
 var scene = new ChunkScene();
 
 new Grape.Game({
-    container:'server-game'
+    container: 'server-game'
 }).start(scene);
 
 var grapeServerState = new GrapeServerState(scene);
@@ -46,7 +46,7 @@ var game = new Game('game', {
 
         var player:classes.Player = new classes.Player({x: 24, y: 24});
         scene.add(player);
-        var playerController = new classes.PlayerController(player);
+        var playerController = new classes.PlayerController({player: player});
         userGame.addCommand('move', function (x, y) {
             player.move(x, y);
         });

@@ -19,15 +19,7 @@ export interface Chunk extends Position {
     data:string[][];
 }
 
-var MultiPlayerObject = Grape.Class('MultiPlayerObject', [Grape.GameObject], {
-    //init: function (opts) {
-    //    if (opts) {
-    //        this.id = opts.id;
-    //    }
-    //}
-});
-
-var Renderable = Grape.Class('Renderable', [Grape.Position, MultiPlayerObject], {
+var Renderable = Grape.Class('Renderable', [Grape.Position, Grape.GameObject], {
     'abstract render': null
 });
 
@@ -48,9 +40,23 @@ export var Player = Grape.Class('Player', [ForegroundObject], {
     }
 });
 
+var KEY_DIRS = {
+    left: [-1, 0],
+    right: [1, 0],
+    up: [0, -1],
+    down: [0, 1]
+};
+
+function moveFn(scene, dir) {
+    return ()=> {
+        scene.mpGame.execute('move', dir[0], dir[1]);
+    };
+}
+
 export var PlayerController = Grape.Class('PlayerController', [ForegroundObject], {
-    init: function (player) {
-        this.player = player;
+    init: function (opts) {
+        opts = opts || {};
+        this.player = opts.player;
     },
     render: function (ctx) {
         ctx.fillStyle = '#4f4';
@@ -61,26 +67,8 @@ export var PlayerController = Grape.Class('PlayerController', [ForegroundObject]
         scene.mpGame.setPredicted('move', (x:number, y:number)=> {
             player.move(x, y);
         });
-        scene.mpGame.setSimulated(this.player, (key, value)=> {
-            if (key === 'x' || key === 'y') {
-                //todo no upd
-            } else {
-                player[key] = value;
-            }
-        });
-    },
-    'global-event keyDown': {
-        left: function () {
-            this.getScene().mpGame.execute('move', -1, 0);
-        },
-        right: function () {
-            this.getScene().mpGame.execute('move', 1, 0);
-        },
-        up: function () {
-            this.getScene().mpGame.execute('move', 0, -1);
-        },
-        down: function () {
-            this.getScene().mpGame.execute('move', 0, 1);
+        for (var i in KEY_DIRS) {
+            this.onGlobal('keyDown.' + scene.keys[i], moveFn(scene, KEY_DIRS[i]));
         }
     }
 });

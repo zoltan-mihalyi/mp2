@@ -22,6 +22,7 @@ class ServerUserGameImpl implements ServerUserGame {
     private clientState:ClientState;
     private commands:{[index:string]:Function} = {}; //todo
     private clientGame:ClientGame;
+    public lastCommandIndex:number;
 
     constructor(game:Game, user:User) {
         this.game = game;
@@ -30,8 +31,11 @@ class ServerUserGameImpl implements ServerUserGame {
         var clientGameId:number = user.addUserGame(this);
         this.state = game.getState();
         this.clientGame = new ClientGameImpl(clientGameId, this.game.getInfo(), {
-            onCommand: (command:string, params:any[])=> {
+            onCommand: (command:string, index:number, params:any[])=> {
                 this.commands[command].apply(this, params);
+                if (index) {
+                    this.lastCommandIndex = index;
+                }
             }
         });
     }

@@ -22,7 +22,7 @@ class GameListenerImpl<T> implements GameListenerGeneric<T> {
     onLeave(t:T):void {
     }
 
-    onReplication(t:T, replicationData:Message<any>):void {
+    onReplication(t:T, lastCommandIndex:number, replicationData:Message<any>):void {
     }
 
     onCallback(callback:Callback, params:any[]):void {

@@ -17,5 +17,5 @@ interface ReplicationClientStateBatch extends ClientStateBatchCommon{
 
 interface ClientStateBatch extends ClientStateBatchCommon {
     apply():void;
-    update(data:IDProvider, simulationInfo:any):void;
+    update(data:IDProvider):void;
 }

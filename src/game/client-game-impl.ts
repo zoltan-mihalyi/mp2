@@ -2,35 +2,55 @@
 ///<reference path="..\replication\replicator-client.ts"/>
 import ArrayMap = require('../array-map'); //todo
 
-interface CommandListener {
-    onCommand(command:string, params:any[]);
-}
-
 class ClientGameImpl implements ClientGame {
     private info:any;
-    private commandListener:CommandListener;
     public id:number;
     private replicator:ReplicatorClient<any>;
     private predictedCommands:{[index:string]:Function} = {};
     private state:ClientState;
-    private simulatedEntities:ArrayMap<any,any> = new ArrayMap<any,any>();
+    private lastSimulated:{command:Function;params:any[];index:number}[] = [];
+    private lastSimulatedId:number = 0;
+    public onCommand:(command:string, index:number, params:any[])=>void;
 
     constructor(id:number, info:any, commandListener:CommandListener) {
         this.id = id;
         this.info = info;
-        this.commandListener = commandListener;
+        this.onCommand = function () {
+            commandListener.onCommand.apply(commandListener, arguments);
+        };
     }
 
     public getInfo():any {
         return this.info;
     }
 
+    public replayCommands(lastIndex:number):void {
+        lastIndex = lastIndex || 0;
+        for (var i = 0; i < this.lastSimulated.length; i++) {
+            if (this.lastSimulated[i].index === lastIndex) {
+                this.lastSimulated.splice(0, i + 1); //remove at index i and everything before it
+                break;
+            }
+        }
+        for (var i = 0; i < this.lastSimulated.length; i++) {
+            var lastSimulated = this.lastSimulated[i];
+            lastSimulated.command.apply(null, lastSimulated.params);
+        }
+    }
+
     public execute(command:string, ...params:any[]) {
+        var index;
         var predictedCommand = this.predictedCommands[command];
         if (predictedCommand) {
             predictedCommand.apply(null, params);
+            index = ++this.lastSimulatedId;
+            this.lastSimulated.push({
+                command: predictedCommand,
+                params: params, //todo.clone
+                index: index //todo körben járjon
+            });
         }
-        this.commandListener.onCommand(command, params);
+        this.onCommand(command, index, params);
     }
 
     public setState(state:ClientState):void {
@@ -49,16 +69,8 @@ class ClientGameImpl implements ClientGame {
         return this.replicator;
     }
 
-    public getSimulatedData(entity:any) {
-        return this.simulatedEntities.get(entity);
-    }
-
     public setPredicted(command:string, handler:Function):void {
         this.predictedCommands[command] = handler;
-    }
-
-    public setSimulated(entity:any, simulationData:any):void {
-        this.simulatedEntities.put(entity, simulationData);
     }
 
 }

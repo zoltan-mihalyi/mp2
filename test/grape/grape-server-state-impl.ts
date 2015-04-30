@@ -9,10 +9,18 @@ class GrapeServerStateImpl extends GrapeStateCommon implements RealServerState {
     constructor(scene:any) {
         super();
         this.scene = scene;
+        var originalRemove = scene.remove;
+        scene.remove = (instance)=> {
+            originalRemove.apply(scene, arguments);
+            this.onRemove(instance);
+        }
     }
 
+    public onRemove:(instance:any)=>void = ()=> {
+    };
+
     forEach(callback:(e:InstanceData)=>void):void {
-        this.scene.forEach((instance)=>{
+        this.scene.forEach((instance)=> {
             callback(this.transform(instance));
         });
     }

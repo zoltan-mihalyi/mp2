@@ -41,8 +41,7 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
                     })(params[callbackIndex]);
                 }
                 var clientGame = userGame.getClientGame();
-                clientGame.execute.apply(clientGame,[event.command].concat(params));
-                //userGame.execute.apply(userGame, [event.command].concat(params));
+                clientGame.onCommand(event.command, event.index, params);
             },
             close: function () {
                 if (server.connectionListener.onDisconnect) {
@@ -78,11 +77,12 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
                     data: leaveEvent
                 });
             },
-            onReplication(clientGame:ClientGame, message:Message<any>):void {
+            onReplication(clientGame:ClientGame, lastCommandIndex:number, message:Message<any>):void {
                 var replicationEvent:ReplicationEvent = {
                     eventType: 'REPLICATION',
                     gameId: clientGame.id,
-                    replicationData: message.data
+                    replicationData: message.data,
+                    lastCommandIndex: lastCommandIndex
                 };
                 out.write({
                     reliable: message.reliable,

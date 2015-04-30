@@ -3,7 +3,7 @@
 interface GameListenerGeneric<T> {
     onJoin?(t:T):void;
     onLeave?(t:T):void;
-    onReplication?(t:T, message:Message<any>):void;
+    onReplication?(t:T, lastCommandIndex:number, message:Message<any>):void;
     onCallback?(callback:Callback, params:any[]):void;
 }
 

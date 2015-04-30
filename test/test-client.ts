@@ -7,27 +7,35 @@ import GrapeClientState=require('./grape/grape-client-state-impl');
 import Client = require('../src/client');
 import BruteForceReplicatorClient = require('../src/replication/brute-force/brute-force-replicator-client');
 
-var game = new Grape.Game({
-    container: 'game',
-    reservedKeys: ['up', 'down']
-});
 
+function createClient(container:string, up:string, left:string, down:string, right:string):Client {
+    var game = new Grape.Game({
+        container: container,
+        reservedKeys: [up, left, down, right]
+    });
 
-var client:Client = new Client({
-    onJoin: function (clientGame:ClientGame) {
-        if (clientGame.getInfo() === 'login') {
-            clientGame.execute('login', 123, 123, function (message) {
-                console.log(message);
-            });
-        } else {
-            var scene = new Grape.Scene();
-            scene.addSystem(new classes.RenderSystem());
-            scene.mpGame = clientGame;
-            game.start(scene);
-            clientGame.setState(new GrapeClientState(scene));
-            clientGame.setReplicator(new BruteForceReplicatorClient())
+    return new Client({
+        onJoin: function (clientGame:ClientGame) {
+            if (clientGame.getInfo() === 'login') {
+                clientGame.execute('login', 123, 123, function (message) {
+                    console.log(message);
+                });
+            } else {
+                var scene = new Grape.Scene();
+                scene.addSystem(new classes.RenderSystem());
+                scene.mpGame = clientGame;
+                scene.keys = {
+                    up: up,
+                    left: left,
+                    down: down,
+                    right: right
+                };
+                game.start(scene);
+                clientGame.setState(new GrapeClientState(scene));
+                clientGame.setReplicator(new BruteForceReplicatorClient())
+            }
         }
-    }
-});
+    });
+}
 
-export = client;
+export = createClient;

@@ -39,7 +39,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                     case 'JOIN':
                         var joinEvent = <JoinEvent>event;
                         clientGame = new ClientGameImpl(joinEvent.gameId, joinEvent.info, {
-                            onCommand: (command:string, params:any[])=> {
+                            onCommand: (command:string, index:number, params:any[])=> {
                                 var callbacks:number[] = [];
                                 for (var i = 0; i < params.length; i++) {
                                     var param = params[i];
@@ -54,7 +54,8 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                                     gameId: joinEvent.gameId,
                                     command: command,
                                     params: params,
-                                    callbacks: callbacks
+                                    callbacks: callbacks,
+                                    index: index
                                 };
 
                                 out.write({
@@ -84,7 +85,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                             keepOrder: true,
                             data: (<ReplicationEvent>event).replicationData
                         };
-                        this.onReplication(this.getGame(event), message);
+                        this.onReplication(this.getGame(event), (<ReplicationEvent>event).lastCommandIndex, message);
                         break;
                 }
             },
@@ -114,8 +115,8 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
         return callbackContainer.nextId;
     }
 
-    onJoin(userGame:ClientGame) {
-        this.listener.onJoin(userGame);
+    onJoin(clientGame:ClientGame) {
+        this.listener.onJoin(clientGame);
     }
 
     onLeave(clientGame:ClientGame) {
@@ -129,18 +130,25 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
         this.listener.onCallback(callback, params);
     }
 
-    onReplication(clientGame:ClientGame, message:Message<any>) {
+    onReplication(clientGame:ClientGame, lastCommandIndex:number, message:Message<any>) {
         var replicationData = message.data;
         var state = clientGame.getState();
+        if (!state) {
+            throw new Error('State is not set in onJoin!');
+        }
         var batch = state.createBatch();
-        clientGame.getReplicator().onUpdate(replicationData, { //todo indention
+        var replicator = clientGame.getReplicator();
+        if (!replicator) {
+            throw new Error('Replicator is not set in onJoin!'); //todo set repl and state at the same time?
+        }
+        replicator.onUpdate(replicationData, { //todo indention
             forEach: (c)=> {
                 state.forEach(c);
             },
             merge: (item:IDProvider)=> {
                 var existing = state.get(item.id);
                 if (existing) {
-                    batch.update(item, clientGame.getSimulatedData(existing));
+                    batch.update(item);
                 } else {
                     batch.create(item);
                 }
@@ -156,7 +164,9 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
             }
         });
         batch.apply();
-        this.listener.onReplication(clientGame, replicationData);
+        this.listener.onReplication(clientGame, lastCommandIndex, replicationData);
+
+        clientGame.replayCommands(lastCommandIndex);
     }
 }
 

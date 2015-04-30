@@ -12,4 +12,5 @@ interface ServerUserGame extends IDProvider{
     getReplicator():ReplicatorServer<any>;
     getRealState():RealServerState;
     getClientGame():ClientGame;
+    lastCommandIndex:number;
 }

@@ -7,7 +7,7 @@ class GrapeClientStateImpl extends GrapeStateCommon implements ClientState {
     private scene:any;
     private byId:{[index:number]:any} = {};
 
-    constructor(scene) {
+    constructor(scene:any) {
         super();
         this.scene = scene;
     }
@@ -17,7 +17,7 @@ class GrapeClientStateImpl extends GrapeStateCommon implements ClientState {
     }
 
     createBatch():ClientStateBatch {
-        var toUpdate:{data:EntityData;simulationInfo:any}[] = [];
+        var toUpdate:EntityData[] = [];
         var created:{instance:any;links:{[index:string]:number}}[] = [];
 
         return {
@@ -40,8 +40,8 @@ class GrapeClientStateImpl extends GrapeStateCommon implements ClientState {
                 this.byId[this.idOf(instance)] = instance;
             },
 
-            update: (data:EntityData, simulationInfo:any):void => {
-                toUpdate.push({data: data, simulationInfo: simulationInfo});
+            update: (data:EntityData):void => {
+                toUpdate.push(data);
             },
             apply: ()=> {
                 for (var i = 0; i < created.length; i++) {
@@ -51,19 +51,13 @@ class GrapeClientStateImpl extends GrapeStateCommon implements ClientState {
                     }
                 }
                 for (var i = 0; i < toUpdate.length; i++) {
-                    var tu = toUpdate[i];
-                    var data = tu.data;
-                    var sim = tu.simulationInfo;
+                    var data = toUpdate[i];
                     var inst = this.byId[data.id];
                     for (var j in data.links) {
                         inst[j] = this.byId[data.links[j]];
                     }
                     for (var j in data.attrs) {
-                        if (sim) {
-                            sim(j, data.attrs[j]);
-                        } else {
-                            inst[j] = data.attrs[j];
-                        }
+                        inst[j] = data.attrs[j];
                     }
                 }
                 for (var i = 0; i < created.length; i++) {
