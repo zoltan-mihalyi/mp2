@@ -2,7 +2,6 @@
 ///<reference path="../typing/all.d.ts"/>
 
 import ws=require('ws');
-import ServerEvents=require('./messaging/server-events');
 
 var WSServer = ws.Server;
 

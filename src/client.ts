@@ -1,10 +1,6 @@
 ///<reference path="connection-accepter.ts"/>
-///<reference path="messaging\join-event.ts"/>
-///<reference path="messaging\command-event.ts"/>
 ///<reference path="replication\replicator-client.ts"/>
 ///<reference path="messaging\game-event.ts"/>
-///<reference path="messaging\callback-event.ts"/>
-///<reference path="messaging\replication-event.ts"/>
 ///<reference path="game\game-listener.ts"/>
 import DiffReplicatorClient = require('./replication/diff/diff-replicator-client');
 import GameListenerImpl = require('./game/game-listener-impl');
@@ -27,7 +23,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
         this.listener = new GameListenerImpl(listener);
     }
 
-    public accept(out:Writeable<Message<CommandEvent>>):Writeable<GameEvent> {
+    public accept(out:Writeable<Message<CommandEvent|SyncEvent>>):Writeable<GameEvent> {
         if (this.out) {
             throw new Error('Client cannot accept more than one connection');
         }
@@ -39,7 +35,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                     case 'JOIN':
                         var joinEvent = <JoinEvent>event;
                         clientGame = new ClientGameImpl(joinEvent.gameId, joinEvent.info, {
-                            onCommand: (command:string, index:number, params:any[])=> {
+                            onCommand: (command:string, params:any[], index:number, elapsed:number)=> {
                                 var callbacks:number[] = [];
                                 for (var i = 0; i < params.length; i++) {
                                     var param = params[i];
@@ -55,7 +51,8 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                                     command: command,
                                     params: params,
                                     callbacks: callbacks,
-                                    index: index
+                                    index: index,
+                                    elapsed: elapsed
                                 };
 
                                 out.write({
@@ -63,13 +60,29 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                                     keepOrder: true,
                                     data: commandEvent
                                 });
+                            },
+                            onSync: function (index:number, elapsed:number) {
+                                var syncEvent:SyncEvent = {
+                                    gameId: joinEvent.gameId,
+                                    eventType: 'SYNC',
+                                    index: index,
+                                    elapsed: elapsed
+                                };
+                                out.write({
+                                    reliable: true,
+                                    keepOrder: true,
+                                    data: syncEvent
+                                });
                             }
                         });
                         this.games.put(clientGame);
+                        clientGame.startSync();
                         this.onJoin(clientGame);
                         break;
                     case 'LEAVE':
-                        this.onLeave(this.getGame(<GameEvent>event));
+                        clientGame = this.getGame(<GameEvent>event);
+                        clientGame.stopSync();
+                        this.onLeave(clientGame);
                         break;
                     case 'CALLBACK':
                         var callbackEvent:CallbackEvent = <CallbackEvent>event;
@@ -80,12 +93,13 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
                         }, callbackEvent.params);
                         break;
                     case 'REPLICATION':
+                        var re = <ReplicationEvent>event;
                         var message:Message<any> = {
                             reliable: true,
                             keepOrder: true,
-                            data: (<ReplicationEvent>event).replicationData
+                            data: re.replicationData
                         };
-                        this.onReplication(this.getGame(event), (<ReplicationEvent>event).lastCommandIndex, message);
+                        this.onReplication(this.getGame(event), re.lastCommandIndex, re.elapsed, message);
                         break;
                 }
             },
@@ -130,7 +144,15 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
         this.listener.onCallback(callback, params);
     }
 
-    onReplication(clientGame:ClientGame, lastCommandIndex:number, message:Message<any>) {
+    onUserGameJoin(userGame:ServerUserGame):void {
+        this.listener.onUserGameJoin(userGame);
+    }
+
+    onUserGameLeave(userGame:ServerUserGame):void {
+        this.listener.onUserGameLeave(userGame);
+    }
+
+    onReplication(clientGame:ClientGameImpl, index:number, elapsed:number, message:Message<any>) {
         var replicationData = message.data;
         var state = clientGame.getState();
         if (!state) {
@@ -164,9 +186,9 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
             }
         });
         batch.apply();
-        this.listener.onReplication(clientGame, lastCommandIndex, replicationData);
+        this.listener.onReplication(clientGame, index, elapsed, replicationData);
 
-        clientGame.replayCommands(lastCommandIndex);
+        clientGame.replaySimulation(index, elapsed);
     }
 }
 

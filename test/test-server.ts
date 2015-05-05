@@ -31,6 +31,14 @@ var login = new Game('login', {
 
 var scene = new ChunkScene();
 
+scene.mpGame = {//todo
+    execute: function () {
+    },
+    executeSimulation: function (fn) {
+        fn();
+    }
+};
+
 new Grape.Game({
     container: 'server-game'
 }).start(scene);

@@ -7,7 +7,7 @@ function bind(fn:Function, context:any):Function {
 
 class GameListenerImpl<T> implements GameListenerGeneric<T> {
     constructor(listener:GameListenerGeneric<T>) {
-        var events = ['onJoin', 'onLeave', 'onReplication', 'onCallback'];
+        var events = ['onJoin', 'onLeave', 'onReplication', 'onCallback', 'onCallback', 'onUserGameJoin', 'onUserGameLeave'];
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
             if (listener[event]) {
@@ -22,10 +22,16 @@ class GameListenerImpl<T> implements GameListenerGeneric<T> {
     onLeave(t:T):void {
     }
 
-    onReplication(t:T, lastCommandIndex:number, replicationData:Message<any>):void {
+    onReplication(t:T, lastCommandIndex:number, elapsed:number, replicationData:Message<any>):void {
     }
 
     onCallback(callback:Callback, params:any[]):void {
+    }
+
+    onUserGameJoin(userGame:ServerUserGame):void {
+    }
+
+    onUserGameLeave(userGame:ServerUserGame):void {
     }
 }
 

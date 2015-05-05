@@ -8,18 +8,14 @@ import nodeStatic=require('node-static');
 
 var transformer:ConnectionAccepter<any, any> = new JSONTransformer(server);
 
-transformer = new DelayTransformer(transformer, 1, 500);
+transformer = new DelayTransformer(transformer, 1, 1000);
 
-var fileServer = new nodeStatic.Server('../',{
-    cache:1
+var fileServer = new nodeStatic.Server('../', {
+    cache: 1
 });
 var httpServer = http.createServer(function (request, response) {
     request.addListener('end', function () {
-        //if(request.url==='/target/browser/test/grape-engine.js'){
-        //    fileServer.serveFile('test/grape.js', 200, {}, request, response);
-        //}else {
-            fileServer.serve(request, response);
-        //}
+        fileServer.serve(request, response);
     }).resume();
 }).listen(8080);
 

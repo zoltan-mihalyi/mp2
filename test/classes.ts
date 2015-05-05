@@ -29,6 +29,7 @@ var ForegroundObject = Grape.Class('ForegroundObject', Renderable, {'abstract re
 export var Player = Grape.Class('Player', [ForegroundObject], {
     init: function () {
         this.speed = 0.1;
+        this.speedY = 0.05;
     },
     move: function (x, y) {
         this.x += x * this.speed;
@@ -37,6 +38,9 @@ export var Player = Grape.Class('Player', [ForegroundObject], {
     render: function (ctx) {
         ctx.fillStyle = '#000';
         ctx.fillRect((this.x + 0.1) * CELL_SIZE, (this.y + 0.1) * CELL_SIZE, CELL_SIZE * 0.8, CELL_SIZE * 0.8);
+    },
+    'global-event simulation': function () {
+        this.y += this.speedY;
     }
 });
 
@@ -53,7 +57,7 @@ function moveFn(scene, dir) {
     };
 }
 
-export var PlayerController = Grape.Class('PlayerController', [ForegroundObject], {
+export var PlayerController = Grape.Class('PlayerController', [Grape.GameObject], {
     init: function (opts) {
         opts = opts || {};
         this.player = opts.player;
@@ -101,6 +105,14 @@ export var RenderSystem = Grape.System.extend({
 });
 
 export var World = Grape.GameObject.extend();
+
+export var SimulatedScene = Grape.Scene.extend({
+    'event frame': function () {
+        this.mpGame.executeSimulation(()=> {
+            this.emit('simulation');
+        });
+    }
+});
 
 classRegistry.register(Player);
 classRegistry.register(PlayerController);

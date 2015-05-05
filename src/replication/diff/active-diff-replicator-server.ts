@@ -40,6 +40,10 @@ class ActiveDiffReplicatorServer extends StateContainer implements ReplicatorSer
             data: diff
         }];
     }
+
+    public firstUpdate(){
+        return null;
+    }
 }
 
 export = ActiveDiffReplicatorServer;

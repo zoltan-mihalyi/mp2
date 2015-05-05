@@ -22,6 +22,10 @@ class BruteForceReplicatorServer extends StateContainer implements ReplicatorSer
             data: entities
         }];
     }
+
+    public firstUpdate():Message<BruteForceMessage>[] {
+        return this.update();
+    }
 }
 
 export = BruteForceReplicatorServer;

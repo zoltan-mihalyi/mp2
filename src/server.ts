@@ -1,7 +1,5 @@
 ///<reference path="connection-accepter.ts"/>
-///<reference path="messaging\command-event.ts"/>
 ///<reference path="messaging\game-event.ts"/>
-///<reference path="messaging\callback-event.ts"/>
 import Game = require('./game/game');
 import UserImpl = require('./user-impl');
 
@@ -10,7 +8,7 @@ interface ConnectionListener {
     onDisconnect?(user:User):void;
 }
 
-class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
+class Server implements ConnectionAccepter<CommandEvent|SyncEvent,GameEvent> {
     public connectionListener:ConnectionListener;
 
     constructor(endpointListener?:ConnectionListener) {
@@ -20,32 +18,36 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
             };
     }
 
-    public accept(out:Writeable<Message<GameEvent>>):Writeable<CommandEvent> {
+    public accept(out:Writeable<Message<GameEvent>>):Writeable<CommandEvent|SyncEvent> {
         var server = this;
         var result = {
-            write: function (event:CommandEvent) { //TODO check client data
+            write: function (event:CommandEvent|SyncEvent) { //TODO check client data
                 var userGame:ServerUserGame = user.getUserGame(event.gameId);
-                var params = [];
-                for (var i = 0; i < event.params.length; i++) {
-                    params[i] = event.params[i];
+                if (event.eventType === 'COMMAND') {
+                    var commandEvent = <CommandEvent>event;
+                    var params = [];
+                    for (var i = 0; i < commandEvent.params.length; i++) {
+                        params[i] = commandEvent.params[i];
+                    }
+                    for (var i = 0; i < commandEvent.callbacks.length; i++) {
+                        var callbackIndex = commandEvent.callbacks[i];
+                        params[callbackIndex] = (function (callbackId) { //todo reduce indention
+                            return function () {
+                                user.onCallback({
+                                    id: callbackId,
+                                    clientGame: userGame.getClientGame()
+                                }, Array.prototype.splice.call(arguments, 0));
+                            }
+                        })(params[callbackIndex]);
+                    }
+                    userGame.onCommand(commandEvent.command, params, event.index, event.elapsed);
+                } else if (event.eventType === 'SYNC') {
+                    userGame.onSync(event.index, event.elapsed);
                 }
-                for (var i = 0; i < event.callbacks.length; i++) {
-                    var callbackIndex = event.callbacks[i];
-                    params[callbackIndex] = (function (callbackId) { //todo reduce indention
-                        return function () {
-                            user.onCallback({
-                                id: callbackId,
-                                clientGame: userGame.getClientGame()
-                            }, Array.prototype.splice.call(arguments, 0));
-                        }
-                    })(params[callbackIndex]);
-                }
-                var clientGame = userGame.getClientGame();
-                clientGame.onCommand(event.command, event.index, params);
             },
             close: function () {
                 if (server.connectionListener.onDisconnect) {
-                    server.connectionListener.onDisconnect(user); //TODO clean up usergames
+                    server.connectionListener.onDisconnect(user);
                 }
                 user.forEachUserGame(function (userGame:ServerUserGame) {
                     userGame.leave();
@@ -55,6 +57,7 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
 
         var user = this.createUser({ //todo redundancy
             onJoin(clientGame:ClientGame):void {
+                clientGame.remote = true;
                 var joinEvent:JoinEvent = {
                     eventType: 'JOIN',
                     gameId: clientGame.id,
@@ -77,12 +80,13 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
                     data: leaveEvent
                 });
             },
-            onReplication(clientGame:ClientGame, lastCommandIndex:number, message:Message<any>):void {
+            onReplication(clientGame:ClientGame, lastCommandIndex:number, elapsed:number, message:Message<any>):void {
                 var replicationEvent:ReplicationEvent = {
                     eventType: 'REPLICATION',
                     gameId: clientGame.id,
                     replicationData: message.data,
-                    lastCommandIndex: lastCommandIndex
+                    lastCommandIndex: lastCommandIndex,
+                    elapsed: elapsed
                 };
                 out.write({
                     reliable: message.reliable,
@@ -102,6 +106,11 @@ class Server implements ConnectionAccepter<CommandEvent,GameEvent> {
                     keepOrder: true,
                     data: callbackEvent
                 });
+            },
+            onUserGameJoin(userGame:ServerUserGame) {
+                userGame.enableSync();
+            },
+            onUserGameLeave(userGame:ServerUserGame) {
             }
         });
         return result;

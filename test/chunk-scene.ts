@@ -2,7 +2,7 @@
 import Grape = require('grape-engine');
 import Classes=require('./classes');
 
-var ChunkScene = Grape.Scene.extend('ChunkScene', {
+var ChunkScene = Classes.SimulatedScene.extend('ChunkScene', {
     init() {
         for (var i = 0; i < 10; i++) {
             for (var j = 0; j < 10; j++) {

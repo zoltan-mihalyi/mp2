@@ -49,6 +49,10 @@ class PassiveDiffReplicatorServer extends StateContainer implements ReplicatorSe
             data: ret
         }];
     }
+
+    public firstUpdate(){
+        return null;
+    }
 }
 
 export = PassiveDiffReplicatorServer;

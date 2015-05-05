@@ -1,8 +1,6 @@
 ///<reference path="user.ts"/>
 ///<reference path="messaging\writeable.ts"/>
 ///<reference path="game\server-user-game.ts"/>
-///<reference path="messaging\join-event.ts"/>
-///<reference path="messaging\replication-event.ts"/>
 
 import GameListenerImpl=require('./game/game-listener-impl');
 

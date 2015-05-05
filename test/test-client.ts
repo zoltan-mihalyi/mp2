@@ -21,7 +21,7 @@ function createClient(container:string, up:string, left:string, down:string, rig
                     console.log(message);
                 });
             } else {
-                var scene = new Grape.Scene();
+                var scene = new classes.SimulatedScene();
                 scene.addSystem(new classes.RenderSystem());
                 scene.mpGame = clientGame;
                 scene.keys = {
