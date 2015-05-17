@@ -1,5 +1,5 @@
 ///<reference path="replicator-server.ts"/>
-///<reference path="..\state\server-state.ts"/>
+///<reference path="../state/server-replication-state.ts"/>
 interface ReplicatorServerFactory{
-    new (s:ServerState):ReplicatorServer<any>;
+    new (s:ServerReplicationState):ReplicatorServer<any>;
 }

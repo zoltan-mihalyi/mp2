@@ -5,11 +5,12 @@ function bind(fn:Function, context:any):Function {
     };
 }
 
+var EVENTS = ['onJoin', 'onLeave', 'onReplication', 'onCallback', 'onCallback', 'onUserGameJoin', 'onUserGameLeave'];
+
 class GameListenerImpl<T> implements GameListenerGeneric<T> {
     constructor(listener:GameListenerGeneric<T>) {
-        var events = ['onJoin', 'onLeave', 'onReplication', 'onCallback', 'onCallback', 'onUserGameJoin', 'onUserGameLeave'];
-        for (var i = 0; i < events.length; i++) {
-            var event = events[i];
+        for (var i = 0; i < EVENTS.length; i++) {
+            var event = EVENTS[i];
             if (listener[event]) {
                 this[event] = bind(listener[event], listener);
             }
@@ -28,10 +29,10 @@ class GameListenerImpl<T> implements GameListenerGeneric<T> {
     onCallback(callback:Callback, params:any[]):void {
     }
 
-    onUserGameJoin(userGame:ServerUserGame):void {
+    onUserGameJoin(userGame:UserGame):void {
     }
 
-    onUserGameLeave(userGame:ServerUserGame):void {
+    onUserGameLeave(userGame:UserGame):void {
     }
 }
 

@@ -1,9 +1,9 @@
 ///<reference path="instance-data.ts"/>
-///<reference path="..\..\src\state\real-server-state.ts"/>
+///<reference path="../../src/state/server-state.ts"/>
 import GrapeStateCommon=require('./grape-state-common');
 import classRegistry = require('./class-registry');
 
-class GrapeServerStateImpl extends GrapeStateCommon implements RealServerState {
+class GrapeServerStateImpl extends GrapeStateCommon implements ServerState {
     private scene:any;
 
     constructor(scene:any) {
@@ -25,7 +25,7 @@ class GrapeServerStateImpl extends GrapeStateCommon implements RealServerState {
         });
     }
 
-    transform(instance:IDProvider):InstanceData {
+    transform(instance:IdProvider):InstanceData {
         var attrs:{[index:string]:any} = {};
         var links:{[index:string]:number} = {};
 

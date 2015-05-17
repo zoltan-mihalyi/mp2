@@ -7,11 +7,11 @@ import StateContainer=require('../state-container');
 class PassiveDiffReplicatorServer extends StateContainer implements ReplicatorServer<Diff> {
     typeId:number = 1;
 
-    private created:IDProvider[] = [];
-    private modified:IDProvider[] = [];
+    private created:IdProvider[] = [];
+    private modified:IdProvider[] = [];
     private removed:number[] = [];
 
-    public setState(state:ServerState) {
+    public setState(state:ServerReplicationState) {
         //super.setState(state);
         //state.onAdd = this.onAdd;
         //state.onRemove = this.onRemove;

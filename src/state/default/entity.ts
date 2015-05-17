@@ -1,11 +1,11 @@
 /// <reference path="../../id-provider.ts" />
 
-interface EntityData extends IDProvider {
+interface EntityData extends IdProvider {
     attrs:{[index:string]:any};
     links:{[index:string]:number};
 }
 
-interface Entity extends IDProvider {
+interface Entity extends IdProvider {
     set(name:string, value:any):void;
     get(name:string):any;
     attach(name:string, value:Entity):void;

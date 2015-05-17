@@ -6,10 +6,10 @@ import ws=require('ws');
 var WSServer = ws.Server;
 
 class WebsocketServer {
-    private server:ConnectionAccepter<string,string>;
+    private server:ConnectionAcceptor<string,string>;
     private wss;
 
-    constructor(server:ConnectionAccepter<string,string>, opts:any) {
+    constructor(server:ConnectionAcceptor<string,string>, opts:any) {
         this.server = server;
         this.wss = new WSServer(opts);
 

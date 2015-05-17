@@ -1,5 +1,5 @@
 ///<reference path="message.ts"/>
-interface Writeable<T>{
-    write(message:T)
+interface Writable<T>{
+    write(data:T)
     close()
 }

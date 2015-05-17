@@ -1,8 +1,8 @@
 ///<reference path="id-provider.ts"/>
 
-interface IdSet<T extends IDProvider> {
+interface IdSet<T extends IdProvider> {
     put(element:T):void;
-    get(element:IDProvider):T;
+    get(element:IdProvider):T;
     getIndex(index:number):T;
     remove(item:T):void;
     removeIndex(index:number):void

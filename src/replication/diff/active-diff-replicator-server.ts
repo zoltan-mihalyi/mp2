@@ -6,7 +6,7 @@ import StateContainer=require('../state-container');
 
 class ActiveDiffReplicatorServer extends StateContainer implements ReplicatorServer<Diff> {
     typeId:number = 1;
-    private lastState:IDProvider[];
+    private lastState:IdProvider[];
 
     public update() {
         var diff:Diff = {

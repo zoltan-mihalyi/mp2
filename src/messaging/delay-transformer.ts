@@ -8,10 +8,10 @@ function createDelay<T>(delay:number) {
     }
 }
 
-class DelayConverter<In,Out> extends Transformer<In,Out,In,Out> {
-    constructor(target:ConnectionAccepter<In,Out>, delay1:number, delay2:number) {
+class DelayTransformer<In,Out> extends Transformer<In,Out,In,Out> {
+    constructor(target:ConnectionAcceptor<In,Out>, delay1:number, delay2:number) {
         super(target, createDelay(delay1), createDelay(delay2));
     }
 }
 
-export = DelayConverter;
+export = DelayTransformer;

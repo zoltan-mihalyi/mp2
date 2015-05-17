@@ -1,5 +1,5 @@
-///<reference path="..\id-provider.ts"/>
-
-interface ServerState {
-    forEach(callback:(e:IDProvider)=>void):void;
+///<reference path="server-replication-state.ts"/>
+interface ServerState extends ServerReplicationState{
+    transform(real:any):IdProvider;
+    onRemove:(instance:any)=>void;
 }

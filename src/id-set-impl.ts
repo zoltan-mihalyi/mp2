@@ -1,14 +1,14 @@
 ///<reference path="id-provider.ts"/>
 ///<reference path="id-set.ts"/>
 
-class IdSetImpl<T extends IDProvider> implements IdSet<T> {
+class IdSetImpl<T extends IdProvider> implements IdSet<T> {
     private map:{[index:number]:T} = {};
 
     public put(element:T):void {
         this.map[element.id] = element;
     }
 
-    public get(element:IDProvider):T {
+    public get(element:IdProvider):T {
         return this.map[element.id];
     }
 

@@ -1,6 +1,6 @@
 ///<reference path="id-provider.ts"/>
 ///<reference path="id-map.ts"/>
-class IdMapImpl<K extends IDProvider, V> implements IdMap<K,V> {
+class IdMapImpl<K extends IdProvider, V> implements IdMap<K,V> {
     private map:{[index:number]:V} = {};
 
     put(key:K, value:V) {

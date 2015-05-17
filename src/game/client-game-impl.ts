@@ -20,7 +20,7 @@ class ClientGameImpl implements ClientGame {
     public onCommand:(command:string, params:any[], index:number, elapsed:number)=>void;
     public onSync:(index:number, elapsed:number)=>void;
     private syncIntervalId;
-    public remote:boolean=false;
+    public remote:boolean = false;
 
     constructor(id:number, info:any, commandListener:CommandListener) {
         this.id = id;

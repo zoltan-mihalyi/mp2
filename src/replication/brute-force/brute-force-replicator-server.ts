@@ -9,7 +9,7 @@ class BruteForceReplicatorServer extends StateContainer implements ReplicatorSer
     public update():Message<BruteForceMessage>[] {
         var entities:BruteForceMessage = [];
         var num = 0;
-        this.state.forEach((entity:IDProvider)=> {
+        this.state.forEach((entity:IdProvider)=> {
             entities.push(entity);
             num++;
         });

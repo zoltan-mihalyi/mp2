@@ -1,4 +1,4 @@
-///<reference path="connection-accepter.ts"/>
+///<reference path="connection-acceptor.ts"/>
 ///<reference path="replication\replicator-client.ts"/>
 ///<reference path="messaging\game-event.ts"/>
 ///<reference path="game\game-listener.ts"/>
@@ -13,8 +13,8 @@ interface CallbackContainer {
     callbacks:{[index:number]:Function};
 }
 
-class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener {
-    private out:Writeable<Message<GameEvent>>;
+class Client implements ConnectionAcceptor<GameEvent,CommandEvent>, GameListener {
+    private out:Writable<Message<GameEvent>>;
     private listener:GameListener;
     private games:IdSet<ClientGameImpl> = new IdSetImpl<ClientGameImpl>();
     private callbacks:IdMap<ClientGame,CallbackContainer> = new IdMapImpl<ClientGame,CallbackContainer>();
@@ -23,7 +23,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
         this.listener = new GameListenerImpl(listener);
     }
 
-    public accept(out:Writeable<Message<CommandEvent|SyncEvent>>):Writeable<GameEvent> {
+    public accept(out:Writable<Message<CommandEvent|SyncEvent>>):Writable<GameEvent> {
         if (this.out) {
             throw new Error('Client cannot accept more than one connection');
         }
@@ -144,11 +144,11 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
         this.listener.onCallback(callback, params);
     }
 
-    onUserGameJoin(userGame:ServerUserGame):void {
+    onUserGameJoin(userGame:UserGame):void {
         this.listener.onUserGameJoin(userGame);
     }
 
-    onUserGameLeave(userGame:ServerUserGame):void {
+    onUserGameLeave(userGame:UserGame):void {
         this.listener.onUserGameLeave(userGame);
     }
 
@@ -167,7 +167,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
             forEach: (c)=> {
                 state.forEach(c);
             },
-            merge: (item:IDProvider)=> {
+            merge: (item:IdProvider)=> {
                 var existing = state.get(item.id);
                 if (existing) {
                     batch.update(item);
@@ -181,7 +181,7 @@ class Client implements ConnectionAccepter<GameEvent,CommandEvent>, GameListener
             contains: (id:number)=> {
                 return typeof state.get(id) !== 'undefined';
             },
-            create: (item:IDProvider)=> {
+            create: (item:IdProvider)=> {
                 batch.create(item);
             }
         });

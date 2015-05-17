@@ -1,9 +1,9 @@
 ///<reference path="..\user.ts"/>
 ///<reference path="..\replication\replicator-server.ts"/>
 ///<reference path="..\relevance\relevance-set.ts"/>
-///<reference path="..\state\real-server-state.ts"/>
+///<reference path="../state/server-state.ts"/>
 ///<reference path="replication-state.ts"/>
-interface ServerUserGame extends IDProvider {
+interface UserGame extends IdProvider {
     leave():void;
     user:User;
     onLeave:Function;
@@ -11,7 +11,7 @@ interface ServerUserGame extends IDProvider {
     setRelevanceSet(relevanceSet:RelevanceSet):void;
     getRelevanceSet():RelevanceSet;
     getReplicator():ReplicatorServer<any>;
-    getRealState():RealServerState;
+    getRealState():ServerState;
     getClientGame():ClientGame;
     lastCommandIndex:number;
     getLastExecuted():number;

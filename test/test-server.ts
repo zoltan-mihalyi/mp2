@@ -16,7 +16,7 @@ var server = new Server({
 });
 
 var login = new Game('login', {
-    onJoin: function (userGame:ServerUserGame) {
+    onJoin: function (userGame:UserGame) {
         userGame.addCommand('login', function (name:string, password:string, callback:Function) {
             if (name === password) {
                 callback('ok');
@@ -45,7 +45,7 @@ new Grape.Game({
 
 var grapeServerState = new GrapeServerState(scene);
 var game = new Game('game', {
-    onJoin: function (userGame:ServerUserGame) {
+    onJoin: function (userGame:UserGame) {
         var relevanceSet = new RelevanceSetVg(userGame.getRealState());
         userGame.setRelevanceSet(relevanceSet);
 

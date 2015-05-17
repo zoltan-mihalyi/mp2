@@ -6,7 +6,7 @@ import http=require('http');
 import nodeStatic=require('node-static');
 
 
-var transformer:ConnectionAccepter<any, any> = new JSONTransformer(server);
+var transformer:ConnectionAcceptor<any, any> = new JSONTransformer(server);
 
 transformer = new DelayTransformer(transformer, 1, 1000);
 

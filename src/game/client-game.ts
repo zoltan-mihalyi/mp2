@@ -2,20 +2,20 @@
 ///<reference path="..\replication\replicator-client.ts"/>
 
 interface CommandListener {
-    onCommand(command:string, params:any[], index:number, elapsed:number);
-    onSync(index:number, elapsed:number);
+    onCommand(command:string, params:any[], index:number, elapsed:number):void;
+    onSync(index:number, elapsed:number):void;
 }
 
-interface ClientGame extends IDProvider,CommandListener {
+interface ClientGame extends IdProvider,CommandListener {
     getInfo():any;
-    execute(command:string, ...params:any[]);
+    execute(command:string, ...params:any[]):void;
     executeSimulation(fn:Function):void;
-    setState(state:ClientState);
+    setState(state:ClientState):void;
     getState():ClientState;
     getReplicator():ReplicatorClient<any>;
-    setReplicator(replicator:ReplicatorClient<any>);
+    setReplicator(replicator:ReplicatorClient<any>):void;
     setPredicted(command:string, handler:Function):void;
     remote:boolean;
-    startSync();
-    stopSync();
+    startSync():void;
+    stopSync():void;
 }

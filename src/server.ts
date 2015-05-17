@@ -1,4 +1,4 @@
-///<reference path="connection-accepter.ts"/>
+///<reference path="connection-acceptor.ts"/>
 ///<reference path="messaging\game-event.ts"/>
 import Game = require('./game/game');
 import UserImpl = require('./user-impl');
@@ -8,21 +8,21 @@ interface ConnectionListener {
     onDisconnect?(user:User):void;
 }
 
-class Server implements ConnectionAccepter<CommandEvent|SyncEvent,GameEvent> {
+class Server implements ConnectionAcceptor<CommandEvent|SyncEvent,GameEvent> {
     public connectionListener:ConnectionListener;
 
-    constructor(endpointListener?:ConnectionListener) {
-        this.connectionListener = endpointListener || {
+    constructor(connectionListener?:ConnectionListener) {
+        this.connectionListener = connectionListener || {
                 onConnect: function () {
                 }
             };
     }
 
-    public accept(out:Writeable<Message<GameEvent>>):Writeable<CommandEvent|SyncEvent> {
+    public accept(out:Writable<Message<GameEvent>>):Writable<CommandEvent|SyncEvent> {
         var server = this;
         var result = {
             write: function (event:CommandEvent|SyncEvent) { //TODO check client data
-                var userGame:ServerUserGame = user.getUserGame(event.gameId);
+                var userGame:UserGame = user.getUserGame(event.gameId);
                 if (event.eventType === 'COMMAND') {
                     var commandEvent = <CommandEvent>event;
                     var params = [];
@@ -49,7 +49,7 @@ class Server implements ConnectionAccepter<CommandEvent|SyncEvent,GameEvent> {
                 if (server.connectionListener.onDisconnect) {
                     server.connectionListener.onDisconnect(user);
                 }
-                user.forEachUserGame(function (userGame:ServerUserGame) {
+                user.forEachUserGame(function (userGame:UserGame) {
                     userGame.leave();
                 });
             }
@@ -107,10 +107,10 @@ class Server implements ConnectionAccepter<CommandEvent|SyncEvent,GameEvent> {
                     data: callbackEvent
                 });
             },
-            onUserGameJoin(userGame:ServerUserGame) {
+            onUserGameJoin(userGame:UserGame) {
                 userGame.enableSync();
             },
-            onUserGameLeave(userGame:ServerUserGame) {
+            onUserGameLeave(userGame:UserGame) {
             }
         });
         return result;

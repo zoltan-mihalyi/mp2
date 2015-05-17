@@ -41,7 +41,7 @@ class ClientStateImpl implements ClientState { //todo move more common part to c
         }
     }
 
-    forEach(callback:(e:IDProvider)=>void):void {
+    forEach(callback:(e:IdProvider)=>void):void {
         this.entities.forEach(callback);
     }
 }

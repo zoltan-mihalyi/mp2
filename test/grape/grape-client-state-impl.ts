@@ -67,7 +67,7 @@ class GrapeClientStateImpl extends GrapeStateCommon implements ClientState {
         }
     }
 
-    forEach(callback:(e:IDProvider)=>void):void {
+    forEach(callback:(e:IdProvider)=>void):void {
         this.scene.get().forEach((e)=> {
             callback({id: this.idOf(e)});
         });

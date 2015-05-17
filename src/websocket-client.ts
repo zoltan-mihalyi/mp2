@@ -1,10 +1,10 @@
-///<reference path="connection-accepter.ts"/>
+///<reference path="connection-acceptor.ts"/>
 
 class WebsocketClient {
-    constructor(accepter:ConnectionAccepter<string,string>, url:string) {
+    constructor(acceptor:ConnectionAcceptor<string,string>, url:string) {
         var ws = new WebSocket(url);
         ws.onopen = function () {
-            var target = accepter.accept({
+            var target = acceptor.accept({
                 write: function (message:Message<string>) {
                     //TODO reliable? keepOrder?
                     ws.send(message.data);

@@ -1,3 +1,3 @@
-interface IDProvider {
+interface IdProvider {
     id:number
 }

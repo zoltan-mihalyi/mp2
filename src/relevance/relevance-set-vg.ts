@@ -1,5 +1,5 @@
 ///<reference path="relevance-set.ts"/>
-///<reference path="..\state\real-server-state.ts"/>
+///<reference path="../state/server-state.ts"/>
 
 import IdSetImpl=require('../id-set-impl');
 import ArrayMap = require('../array-map');
@@ -14,9 +14,9 @@ interface VisibilityGroup<T> {
 class RelevanceSetVg implements RelevanceSet {
     private elements:ArrayMap<any,number> = new ArrayMap<any, number>();
     private visibilityGroups:VisibilityGroup<any>[] = [];
-    private state:RealServerState;
+    private state:ServerState;
 
-    constructor(state:RealServerState) {
+    constructor(state:ServerState) {
         this.state = state;
     }
 
@@ -29,7 +29,7 @@ class RelevanceSetVg implements RelevanceSet {
         }
     }
 
-    forEach(callback:(item:IDProvider)=>void):void {
+    forEach(callback:(item:IdProvider)=>void):void {
         this.elements.forEach((element:any)=> {
             callback(this.state.transform(element));
         });

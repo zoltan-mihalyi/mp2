@@ -1,4 +1,4 @@
-///<reference path="server-user-game.ts"/>
+///<reference path="user-game.ts"/>
 ///<reference path="../replication/replicator-client.ts"/>
 ///<reference path="..\user.ts"/>
 ///<reference path="..\replication\replicator-server.ts"/>
@@ -10,13 +10,13 @@ import BruteForceReplicatorServer= require('../replication/brute-force/brute-for
 import Game=require('./game');
 import ClientGameImpl=require('./client-game-impl');
 
-class ServerUserGameImpl implements ServerUserGame, CommandListener {
+class UserGameImpl implements UserGame, CommandListener {
     public game:Game;
     public user:User;
     public onLeave = function () {
     };
     public id;
-    private state:RealServerState;
+    private state:ServerState;
     private relevanceSet:RelevanceSet;
     private relevanceSetReplicator:ReplicatorServer<any>;
     private commands:{[index:string]:Function} = {}; //todo
@@ -124,7 +124,7 @@ class ServerUserGameImpl implements ServerUserGame, CommandListener {
         });
     }
 
-    getRealState():RealServerState {
+    getRealState():ServerState {
         return this.state;
     }
 
@@ -165,4 +165,4 @@ class ServerUserGameImpl implements ServerUserGame, CommandListener {
     }
 }
 
-export = ServerUserGameImpl;
+export = UserGameImpl;

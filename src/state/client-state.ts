@@ -2,20 +2,20 @@
 interface ClientState {
     createBatch():ClientStateBatch;
     get(id:number):any;
-    forEach(callback:(e:IDProvider)=>void):void;
+    forEach(callback:(e:IdProvider)=>void):void;
 }
 
 interface ClientStateBatchCommon{
     remove(id:number):void;
-    create(data:IDProvider):void;
+    create(data:IdProvider):void;
 }
 
 interface ReplicationClientStateBatch extends ClientStateBatchCommon{
-    forEach(callback:(e:IDProvider)=>void):void;
-    merge(data:IDProvider):void;
+    forEach(callback:(e:IdProvider)=>void):void;
+    merge(data:IdProvider):void;
 }
 
 interface ClientStateBatch extends ClientStateBatchCommon {
     apply():void;
-    update(data:IDProvider):void;
+    update(data:IdProvider):void;
 }

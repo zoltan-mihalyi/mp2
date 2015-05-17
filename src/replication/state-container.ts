@@ -1,8 +1,8 @@
-///<reference path="..\state\server-state.ts"/>
+///<reference path="../state/server-replication-state.ts"/>
 class StateContainer {
-    protected state:ServerState;
+    protected state:ServerReplicationState;
 
-    constructor(state:ServerState) {
+    constructor(state:ServerReplicationState) {
         this.state = state;
     }
 }

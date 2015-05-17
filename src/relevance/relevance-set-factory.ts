@@ -1,5 +1,5 @@
 ///<reference path="relevance-set.ts"/>
-///<reference path="..\state\server-state.ts"/>
+///<reference path="../state/server-replication-state.ts"/>
 interface RelevanceSetFactory{
-    new (state:ServerState):RelevanceSet;
+    new (state:ServerReplicationState):RelevanceSet;
 }

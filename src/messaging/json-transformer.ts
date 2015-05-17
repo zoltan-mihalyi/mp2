@@ -23,8 +23,8 @@ function convertBack<T>(data:string, callback:(result:T)=>void):void {
 }
 
 class JSONConverter<In,Out> extends Transformer<In,Out,string,string> {
-    constructor(accepter:ConnectionAccepter<In,Out>) {
-        super(accepter, convert, convertBack);
+    constructor(acceptor:ConnectionAcceptor<In,Out>) {
+        super(acceptor, convert, convertBack);
     }
 }
 
