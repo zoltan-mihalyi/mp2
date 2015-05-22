@@ -1,5 +1,5 @@
 {
-  "name": "mp",
+  "name": "mp-engine",
   "version": "1.0.0",
   "description": "Multiplayer framework",
   "main": "target/node/main-impl.js",
@@ -7,7 +7,7 @@
     "start": "node test/test-server-remote.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "zoltan-mihalyi <zoltan.mihalyi.90@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "ws": "^0.7.1"

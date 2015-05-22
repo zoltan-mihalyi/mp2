@@ -28,13 +28,13 @@ module.exports = function (grunt) {
             },
             dts: {
                 browser: {
-                    name: 'mp',
+                    name: 'mp-engine',
                     main: 'Main',
                     out: 'mp.d.ts',
                     src: ['target/browser/**/*.ts']
                 },
                 node: {
-                    name: 'mp',
+                    name: 'mp-engine',
                     main: 'Main',
                     out: 'mp.d.ts',
                     src: ['target/node/**/*.ts']
@@ -94,6 +94,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-typescript');
     grunt.loadNpmTasks('grunt-contrib-requirejs');
 
-    grunt.registerTask('node', ['typescript:node']);
+    grunt.registerTask('node', ['typescript:node','dts:node']);
     grunt.registerTask('browser', ['typescript:browser', 'requirejs', 'dts:browser']);
 };
