@@ -1,19 +1,17 @@
 ///<reference path="..\replicator-client.ts"/>
 ///<reference path="diff.ts"/>
-import ClientStateContainer=require('../client-state-container');
 
-class DiffReplicatorClient extends ClientStateContainer<any> implements ReplicatorClient<Diff> {
-    public onUpdate(message:Diff) { //todo
+class DiffReplicatorClient implements ReplicatorClient<Diff> {
+    public onUpdate(message:Diff, batch:ReplicationClientStateBatch) { //todo
         for (var i = 0; i < message.create.length; i++) {
             var newObject = message.create[i];
-            this.state[newObject.id] = newObject;
+            batch.merge(newObject);
         }
         for (var i = 0; i < message.remove.length; i++) {
-            delete this.state[message.remove[i]];
+            batch.remove(message.remove[i]);
         }
         for (var i = 0; i < message.modify.length; i++) {
-            var mod = message.modify[i];
-            this.state[mod.id] = mod;
+            batch.merge(message.modify[i]);
         }
     }
 }

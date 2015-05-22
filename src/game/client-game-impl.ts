@@ -7,6 +7,13 @@ interface SyncData {
     elapsed:number;
 }
 
+interface Simulation{
+    command:Function;
+    params:any[];
+    index:number;
+    elapsed:number;
+}
+
 class ClientGameImpl implements ClientGame {
     public syncInterval = 100; //todo
     private info:any;
@@ -14,7 +21,7 @@ class ClientGameImpl implements ClientGame {
     private replicator:ReplicatorClient<any>;
     private predictedCommands:{[index:string]:Function} = {};
     private state:ClientState;
-    private lastSimulated:{command:Function;params:any[];index:number; elapsed:number}[] = [];
+    private lastSimulated:Simulation[] = [];
     private lastSyncId:number = 0;
     private lastSync:number;
     public onCommand:(command:string, params:any[], index:number, elapsed:number)=>void;

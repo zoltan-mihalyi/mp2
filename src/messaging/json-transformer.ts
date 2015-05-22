@@ -22,10 +22,10 @@ function convertBack<T>(data:string, callback:(result:T)=>void):void {
     callback(parsed);
 }
 
-class JSONConverter<In,Out> extends Transformer<In,Out,string,string> {
+class JSONTransformer<In,Out> extends Transformer<In,Out,string,string> {
     constructor(acceptor:ConnectionAcceptor<In,Out>) {
         super(acceptor, convert, convertBack);
     }
 }
 
-export = JSONConverter;
+export = JSONTransformer;

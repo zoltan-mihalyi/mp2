@@ -1,0 +1,4 @@
+*
+!package.json
+!target/node/**/*
+!mp.d.ts

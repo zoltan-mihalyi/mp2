@@ -18,4 +18,5 @@ interface ClientGame extends IdProvider,CommandListener {
     remote:boolean;
     startSync():void;
     stopSync():void;
+    replaySimulation(index:number, elapsed:number):void;
 }

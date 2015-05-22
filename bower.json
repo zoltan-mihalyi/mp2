@@ -9,18 +9,12 @@
     "multiplayer",
     "game"
   ],
+  "main":"mp.js",
   "license": "MIT",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "requirejs": "~2.1.17"
-  },
-  "devDependencies": {
-    "grape-engine": "*"
-  }
+    "*",
+    "!mp.js",
+    "!mp.d.ts",
+    "!bower.json"
+  ]
 }

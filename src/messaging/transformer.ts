@@ -1,9 +1,7 @@
 ///<reference path="writeable.ts"/>
 ///<reference path="../connection-acceptor.ts"/>
+///<reference path="async-convert.ts"/>
 
-interface AsyncConvert<F,T> {
-    (f:F, callback:(t:T)=>void):void;
-}
 
 class Transformer<InFrom,OutFrom,In,Out> implements ConnectionAcceptor<In,Out> {
     private target:ConnectionAcceptor<InFrom,OutFrom>;

@@ -1,25 +1,26 @@
 ///<reference path="server.ts"/>
 ///<reference path="../typing/all.d.ts"/>
 
-import ws=require('ws');
-
-var WSServer = ws.Server;
+declare
+var require;
 
 class WebsocketServer {
     private server:ConnectionAcceptor<string,string>;
     private wss;
 
     constructor(server:ConnectionAcceptor<string,string>, opts:any) {
+        var ws = require('ws');
+        var WSServer = ws.Server;
         this.server = server;
         this.wss = new WSServer(opts);
 
         this.wss.on('connection', function (ws) {
-            var target=server.accept({
+            var target = server.accept({
                 write: function (m:Message<string>) {
                     //TODO reliable? keepOrder?
                     try {
                         ws.send(m.data);
-                    }catch(e){
+                    } catch (e) {
                     }
                 },
                 close: function () {
@@ -27,11 +28,11 @@ class WebsocketServer {
                 }
             });
 
-            ws.on('message', function(message:string){
+            ws.on('message', function (message:string) {
                 target.write(message);
             });
 
-            ws.on('close', function(){
+            ws.on('close', function () {
                 target.close();
             });
         });

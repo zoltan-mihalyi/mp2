@@ -1,0 +1,7 @@
+        mp = require('main-impl');
+    })();
+    if (typeof define && define.amd) {
+        define([], mp);
+    }
+    global.mp = mp;
+})(this);

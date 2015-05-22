@@ -152,7 +152,7 @@ class Client implements ConnectionAcceptor<GameEvent,CommandEvent>, GameListener
         this.listener.onUserGameLeave(userGame);
     }
 
-    onReplication(clientGame:ClientGameImpl, index:number, elapsed:number, message:Message<any>) {
+    onReplication(clientGame:ClientGame, index:number, elapsed:number, message:Message<any>) {
         var replicationData = message.data;
         var state = clientGame.getState();
         if (!state) {

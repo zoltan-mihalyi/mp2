@@ -7,16 +7,15 @@
 ///<reference path="..\state\client-state.ts"/>
 ///<reference path="replication-state.ts"/>
 import BruteForceReplicatorServer= require('../replication/brute-force/brute-force-replicator-server');
-import Game=require('./game');
+import Game=require('./game-impl');
 import ClientGameImpl=require('./client-game-impl');
 
 class UserGameImpl implements UserGame, CommandListener {
-    public game:Game;
+    private game:Game;
     public user:User;
     public onLeave = function () {
     };
     public id;
-    private state:ServerState;
     private relevanceSet:RelevanceSet;
     private relevanceSetReplicator:ReplicatorServer<any>;
     private commands:{[index:string]:Function} = {}; //todo
@@ -26,14 +25,13 @@ class UserGameImpl implements UserGame, CommandListener {
     private lastSyncTime:number;
     private lastSyncDelayedTime:number;
     public replicationState:ReplicationState = ReplicationState.BEFORE_FIRST_REPLICATION;
-    private needSync = false;
+    private needSync:boolean = false;
 
     constructor(game:Game, user:User) {
         this.game = game;
         this.user = user;
         this.id = game.nextUserGameId();
         var clientGameId:number = user.addUserGame(this);
-        this.state = game.getState();
         this.clientGame = new ClientGameImpl(clientGameId, this.game.getInfo(), this);
     }
 
@@ -125,7 +123,7 @@ class UserGameImpl implements UserGame, CommandListener {
     }
 
     getRealState():ServerState {
-        return this.state;
+        return this.game.getState();
     }
 
     leave():void {

@@ -2,7 +2,7 @@
   "name": "mp",
   "version": "1.0.0",
   "description": "Multiplayer framework",
-  "main": "index.js",
+  "main": "target/node/main-impl.js",
   "scripts": {
     "start": "node test/test-server-remote.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,10 +13,10 @@
     "ws": "^0.7.1"
   },
   "devDependencies": {
-    "grape-engine": "^1.0.2",
+    "almond": "^0.3.1",
     "grunt": "^0.4.5",
+    "grunt-contrib-requirejs": "^0.4.4",
     "grunt-typescript": "^0.6.1",
-    "node-static": "^0.7.6",
     "typescript": "1.4.1"
   }
 }
